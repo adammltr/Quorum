@@ -1,0 +1,63 @@
+# Configuration gitleaks pour Quorum
+# Docs : https://github.com/gitleaks/gitleaks
+
+title = "Quorum gitleaks config"
+
+[extend]
+# Utilise les règles officielles gitleaks comme base
+useDefault = true
+
+# ─── Règles personnalisées Quorum ────────────────────────────────────
+
+[[rules]]
+id = "openrouter-api-key"
+description = "Clé API OpenRouter"
+regex = '''sk-or-v1-[a-zA-Z0-9]{40,}'''
+tags = ["api-key", "openrouter"]
+
+[[rules]]
+id = "supabase-service-role"
+description = "Clé service_role Supabase (accès admin complet)"
+regex = '''eyJ[a-zA-Z0-9_-]{100,}'''
+tags = ["api-key", "supabase"]
+# Note : les JWT Supabase commencent tous par eyJ (base64 de {"alg":"HS256"})
+# Cette règle est volontairement large — les faux positifs (anon key) sont
+# acceptables : mieux vaut sur-détecter que sous-détecter.
+
+[[rules]]
+id = "env-file-secrets"
+description = "Fichier .env commité avec de vraies valeurs"
+path = '''\.env(\.\w+)?$'''
+regex = '''(API_KEY|SECRET|PASSWORD|TOKEN|SERVICE_ROLE)\s*=\s*(?!REMPLACE_|votre_|your_|sk-or-EXEMPLE|eyJSEMPLE)[^\s"']+'''
+tags = ["env", "secret"]
+
+# ─── Exclusions ───────────────────────────────────────────────────────
+
+[allowlist]
+description = "Exclusions globales Quorum"
+paths = [
+  # Fichiers exemple — contiennent des placeholders, pas de vraies clés
+  '''.env.example''',
+  '''.env.test.example''',
+  # Config gitleaks elle-même (contient des regex avec des patterns de clés)
+  '''.gitleaks.toml''',
+  # Documentation
+  '''CONTRIBUTING.md''',
+  '''README.md''',
+  # Dépendances — ne pas scanner (lent + faux positifs)
+  '''node_modules/''',
+  '''dist/''',
+  '''build/''',
+]
+
+regexes = [
+  # Placeholders explicites utilisés dans les exemples
+  '''REMPLACE_PAR_''',
+  '''YOUR_''',
+  '''VOTRE_''',
+  # Valeurs de test connues
+  '''sk-or-EXEMPLE''',
+  '''eyJSEMPLE''',
+  # JWT HS256 header seul (sans payload = pas un vrai token)
+  '''^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9$''',
+]

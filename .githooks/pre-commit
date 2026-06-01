@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Hook pre-commit Quorum — scan gitleaks avant chaque commit
+# Activé via : git config core.hooksPath .githooks
+
+set -euo pipefail
+
+# Vérifie que gitleaks est installé
+if ! command -v gitleaks &> /dev/null; then
+  echo ""
+  echo "  ⚠️  gitleaks n'est pas installé."
+  echo "  Ce projet utilise gitleaks pour prévenir les fuites de secrets."
+  echo ""
+  echo "  Installation rapide :"
+  echo "    macOS  : brew install gitleaks"
+  echo "    Windows: scoop install gitleaks"
+  echo "    Linux  : voir CONTRIBUTING.md"
+  echo ""
+  echo "  Après installation, relance ton commit."
+  echo ""
+  exit 1
+fi
+
+echo "🔍 Scan gitleaks en cours..."
+
+# Scan uniquement les fichiers stagés (pas tout l'historique à chaque commit)
+gitleaks protect \
+  --config .gitleaks.toml \
+  --staged \
+  --redact \
+  --verbose
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "  🚨 gitleaks a détecté un secret potentiel dans tes fichiers stagés."
+  echo ""
+  echo "  Que faire :"
+  echo "    1. Identifie la ligne signalée ci-dessus."
+  echo "    2. Remplace la valeur par une variable d'environnement."
+  echo "    3. Ajoute la variable dans .env.local (jamais dans .env.example avec une vraie valeur)."
+  echo "    4. Relance : git add . && git commit"
+  echo ""
+  echo "  Si c'est un faux positif, ajoute une exception dans .gitleaks.toml (section [allowlist])."
+  echo ""
+  exit 1
+fi
+
+echo "✅ Aucun secret détecté. Commit autorisé."

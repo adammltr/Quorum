@@ -1,0 +1,9 @@
+# Réglages pnpm (pnpm 11+ lit la config ici, plus dans package.json).
+# Seuls ces build scripts natifs sont exécutés ; les autres (ex. msw) sont
+# ignorés silencieusement, sans prompt.
+onlyBuiltDependencies:
+  - esbuild
+  - '@tailwindcss/oxide'
+
+# Ne pas relancer un check d'install avant chaque script (bruyant, lent).
+verifyDepsBeforeRun: false

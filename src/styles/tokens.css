@@ -1,0 +1,129 @@
+/* ════════════════════════════════════════════════════════════════════
+   Quorum — Tokens de couleur (OKLCH)
+   Traduction fidèle de docs/DESIGN.md §3.
+   - Valeurs brutes Quorum (--surface, --gold, --consensus…)
+   - + variables sémantiques attendues par shadcn (--background, --primary…)
+     mappées sur la palette pour que les composants héritent du thème.
+
+   Mode SOMBRE = défaut (:root + .dark). Mode CLAIR « papier » = .light.
+
+   NOTE : l'ambre signature de DESIGN.md (« --color-accent ») est exposé ici
+   sous le nom --gold pour ne pas entrer en collision avec le --accent neutre
+   de shadcn (fonds de survol). Voir @theme dans index.css (bg-gold).
+   ════════════════════════════════════════════════════════════════════ */
+
+:root,
+.dark {
+  /* ─── Palette Quorum brute — SOMBRE ─────────────────────────────── */
+  --background: oklch(12% 0.008 60); /* encre/graphite chaud profond */
+  --surface: oklch(16% 0.01 60); /* cartes, panneaux */
+  --surface-raised: oklch(20% 0.012 60); /* modales, dropdowns */
+  --surface-glass: oklch(18% 0.01 60 / 0.72); /* base glassmorphism */
+
+  --border-subtle: oklch(30% 0.01 60); /* séparateurs subtils */
+  --border-bright: oklch(55% 0.015 60); /* carte active, focus */
+
+  --text: oklch(93% 0.005 60); /* blanc cassé chaud */
+  --text-muted: oklch(58% 0.008 60); /* labels, metadata */
+  --text-subtle: oklch(40% 0.006 60); /* placeholders, désactivé */
+
+  /* Accent signature — ambre/or */
+  --gold: oklch(82% 0.155 72); /* verdict, moments de valeur */
+  --gold-muted: oklch(65% 0.1 72); /* hover, bordure */
+  --gold-dim: oklch(45% 0.06 72 / 0.3); /* lueur, fonds subtils */
+
+  /* Sémantique du vote */
+  --consensus: oklch(68% 0.1 155); /* vert calme — accord fort */
+  --consensus-dim: oklch(68% 0.1 155 / 0.2);
+  --partial: oklch(75% 0.11 72); /* ambre — accord partiel */
+  --partial-dim: oklch(75% 0.11 72 / 0.2);
+  --dissent: oklch(60% 0.1 30); /* rouille — désaccord */
+  --dissent-dim: oklch(60% 0.1 30 / 0.2);
+
+  /* ─── Mapping shadcn (sémantique UI) — SOMBRE ───────────────────── */
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text);
+
+  /* Boutons primaires = monochrome premium (near-white sur sombre) */
+  --primary: oklch(93% 0.005 60);
+  --primary-foreground: oklch(16% 0.012 60);
+
+  --secondary: oklch(20% 0.012 60);
+  --secondary-foreground: var(--text);
+
+  --muted: oklch(20% 0.012 60);
+  --muted-foreground: var(--text-muted);
+
+  /* accent NEUTRE de shadcn (survol) — PAS l'ambre */
+  --accent: oklch(22% 0.012 60);
+  --accent-foreground: var(--text);
+
+  --destructive: oklch(58% 0.14 22); /* rouge rouille sombre */
+  --destructive-foreground: oklch(96% 0.01 60);
+
+  --border: var(--border-subtle);
+  --input: oklch(28% 0.01 60);
+  --ring: var(--gold-muted); /* focus en couleur de marque */
+
+  /* Rayons (base) */
+  --radius: 0.875rem; /* 14px — lg */
+
+  color-scheme: dark;
+}
+
+.light {
+  /* ─── Palette Quorum brute — CLAIR « papier » ───────────────────── */
+  --background: oklch(97% 0.006 72); /* papier ivoire chaud */
+  --surface: oklch(94% 0.008 72);
+  --surface-raised: oklch(91% 0.01 72);
+  --surface-glass: oklch(96% 0.008 72 / 0.82);
+
+  --border-subtle: oklch(82% 0.012 72);
+  --border-bright: oklch(55% 0.02 72);
+
+  --text: oklch(16% 0.012 60); /* encre chaude — pas noir pur */
+  --text-muted: oklch(42% 0.01 60);
+  --text-subtle: oklch(60% 0.008 60);
+
+  --gold: oklch(62% 0.17 60); /* ambre soutenu sur fond clair */
+  --gold-muted: oklch(55% 0.13 60);
+  --gold-dim: oklch(62% 0.1 60 / 0.15);
+
+  --consensus: oklch(42% 0.11 155);
+  --consensus-dim: oklch(42% 0.11 155 / 0.15);
+  --partial: oklch(52% 0.12 65);
+  --partial-dim: oklch(52% 0.12 65 / 0.15);
+  --dissent: oklch(48% 0.11 30);
+  --dissent-dim: oklch(48% 0.11 30 / 0.15);
+
+  /* ─── Mapping shadcn — CLAIR ─────────────────────────────────────── */
+  --foreground: var(--text);
+  --card: oklch(99% 0.005 72);
+  --card-foreground: var(--text);
+  --popover: oklch(99% 0.005 72);
+  --popover-foreground: var(--text);
+
+  --primary: oklch(20% 0.012 60); /* encre — bouton sombre sur papier */
+  --primary-foreground: oklch(97% 0.006 72);
+
+  --secondary: oklch(91% 0.01 72);
+  --secondary-foreground: var(--text);
+
+  --muted: oklch(91% 0.01 72);
+  --muted-foreground: var(--text-muted);
+
+  --accent: oklch(89% 0.012 72);
+  --accent-foreground: var(--text);
+
+  --destructive: oklch(46% 0.15 22);
+  --destructive-foreground: oklch(98% 0.005 72);
+
+  --border: var(--border-subtle);
+  --input: oklch(80% 0.012 72);
+  --ring: var(--gold-muted);
+
+  color-scheme: light;
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta
+      name="description"
+      content="Quorum — posez une question, regardez 4 intelligences délibérer."
+    />
+
+    <!-- Préchargement des polices critiques (above-the-fold) -->
+    <link
+      rel="preload"
+      href="/fonts/instrument-serif-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/geist-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/geist-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <title>Quorum — Le consensus des intelligences</title>
+
+    <!-- Anti-FOUC : applique le thème persisté avant le 1er paint (défaut sombre) -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('quorum-theme')
+          var theme = t === 'light' || t === 'dark' ? t : 'dark'
+          var root = document.documentElement
+          root.classList.remove('dark', 'light')
+          root.classList.add(theme)
+        } catch (e) {
+          /* localStorage indisponible → on garde la classe `dark` du <html> */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
