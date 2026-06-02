@@ -24,8 +24,12 @@
   --border-bright: oklch(55% 0.015 60); /* carte active, focus */
 
   --text: oklch(93% 0.005 60); /* blanc cassé chaud */
-  --text-muted: oklch(58% 0.008 60); /* labels, metadata */
-  --text-subtle: oklch(40% 0.006 60); /* placeholders, désactivé */
+  --text-muted: oklch(58% 0.008 60); /* labels, metadata — AA 4.73:1 /bg */
+  /* WCAG 2.2 AA : sur fond L12% il n'existe pas de 3e palier de texte lisible
+     sous --text-muted. --text-subtle est donc remonté au plancher AA (4.53:1
+     sur les cartes /surface). Déviation assumée vs DESIGN.md (valeur d'origine
+     oklch(40%) = 2.2:1, illisible). Réserver subtle au décoratif/désactivé. */
+  --text-subtle: oklch(58% 0.008 60);
 
   /* Accent signature — ambre/or */
   --gold: oklch(82% 0.155 72); /* verdict, moments de valeur */
@@ -85,10 +89,10 @@
   --border-bright: oklch(55% 0.02 72);
 
   --text: oklch(16% 0.012 60); /* encre chaude — pas noir pur */
-  --text-muted: oklch(42% 0.01 60);
-  --text-subtle: oklch(60% 0.008 60);
+  --text-muted: oklch(42% 0.01 60); /* AA 7.77:1 /bg */
+  --text-subtle: oklch(48% 0.01 60); /* AA 6.0:1 /bg (était 60% = 3.6:1, fail) */
 
-  --gold: oklch(62% 0.17 60); /* ambre soutenu sur fond clair */
+  --gold: oklch(55% 0.17 60); /* ambre soutenu — AA 4.65:1 /bg (était 62% = 3.5:1, fail) */
   --gold-muted: oklch(55% 0.13 60);
   --gold-dim: oklch(62% 0.1 60 / 0.15);
 

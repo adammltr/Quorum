@@ -10,6 +10,34 @@
       content="Quorum — posez une question, regardez 4 intelligences délibérer."
     />
 
+    <!-- Couleur de la barre système, accordée au thème (sombre par défaut) -->
+    <meta name="theme-color" content="#080504" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8f4f1" media="(prefers-color-scheme: light)" />
+
+    <!-- PWA + iOS -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="apple-mobile-web-app-title" content="Quorum" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Open Graph / Twitter (les pages partagées /q/:slug surchargent via api/share.ts) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Quorum" />
+    <meta property="og:title" content="Quorum — Le consensus des intelligences" />
+    <meta
+      property="og:description"
+      content="Posez une question, regardez 4 intelligences délibérer, obtenez un verdict de consensus."
+    />
+    <meta property="og:image" content="/api/og" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Quorum — Le consensus des intelligences" />
+    <meta
+      name="twitter:description"
+      content="Posez une question, regardez 4 intelligences délibérer, obtenez un verdict de consensus."
+    />
+    <meta name="twitter:image" content="/api/og" />
+
     <!-- Préchargement des polices critiques (above-the-fold) -->
     <link
       rel="preload"

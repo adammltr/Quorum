@@ -6,6 +6,7 @@ import { App } from './App'
 import { ThemeProvider } from './components/theme/ThemeProvider'
 import { AuthProvider } from './components/auth/AuthProvider'
 import { PaywallProvider } from './components/billing/PaywallProvider'
+import { ErrorBoundary } from './components/system/ErrorBoundary'
 
 const rootElement = document.getElementById('root')
 if (rootElement === null) {
@@ -14,14 +15,16 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <PaywallProvider>
-            <App />
-          </PaywallProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <PaywallProvider>
+              <App />
+            </PaywallProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )

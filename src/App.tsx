@@ -2,6 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { DesignSystem } from './pages/DesignSystem'
+import { RouteFallback } from './components/system/RouteFallback'
 
 // La page publique n'est utile qu'aux visiteurs d'un lien partagé : on la charge
 // à la demande pour ne pas alourdir le bundle initial du parcours principal.
@@ -24,79 +25,32 @@ const DailyArchive = lazy(() =>
   import('./pages/DailyArchive').then((m) => ({ default: m.DailyArchive })),
 )
 
+// 404 — page introuvable (catch-all), chargée à la demande.
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })))
+
 export function App(): ReactNode {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      {/* Page publique d'un résultat partagé (SSR meta via api/share.ts) */}
-      <Route
-        path="/q/:slug"
-        element={
-          <Suspense fallback={null}>
-            <PublicResult />
-          </Suspense>
-        }
-      />
-      {/* Rituel quotidien — Question du Jour */}
-      <Route
-        path="/jour"
-        element={
-          <Suspense fallback={null}>
-            <DailyQuestion />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/jour/archive"
-        element={
-          <Suspense fallback={null}>
-            <DailyArchive />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/jour/:day"
-        element={
-          <Suspense fallback={null}>
-            <DailyQuestion />
-          </Suspense>
-        }
-      />
-      {/* Espaces compte & rétention */}
-      <Route
-        path="/history"
-        element={
-          <Suspense fallback={null}>
-            <History />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/collections"
-        element={
-          <Suspense fallback={null}>
-            <Collections />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/collections/:id"
-        element={
-          <Suspense fallback={null}>
-            <Collections />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/councils"
-        element={
-          <Suspense fallback={null}>
-            <Councils />
-          </Suspense>
-        }
-      />
-      {/* Page interne non listée — vitrine du design system */}
-      <Route path="/_designsystem" element={<DesignSystem />} />
-    </Routes>
+    // Un seul Suspense englobe toutes les routes lazy : un fallback soigné
+    // (jamais d'écran blanc) le temps que le chunk de la page arrive.
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        {/* Page publique d'un résultat partagé (SSR meta via api/share.ts) */}
+        <Route path="/q/:slug" element={<PublicResult />} />
+        {/* Rituel quotidien — Question du Jour */}
+        <Route path="/jour" element={<DailyQuestion />} />
+        <Route path="/jour/archive" element={<DailyArchive />} />
+        <Route path="/jour/:day" element={<DailyQuestion />} />
+        {/* Espaces compte & rétention */}
+        <Route path="/history" element={<History />} />
+        <Route path="/collections" element={<Collections />} />
+        <Route path="/collections/:id" element={<Collections />} />
+        <Route path="/councils" element={<Councils />} />
+        {/* Page interne non listée — vitrine du design system */}
+        <Route path="/_designsystem" element={<DesignSystem />} />
+        {/* Catch-all — 404 soignée, jamais d'écran vide */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   )
 }

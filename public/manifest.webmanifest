@@ -1,0 +1,28 @@
+{
+  "name": "Quorum — Le consensus des intelligences",
+  "short_name": "Quorum",
+  "description": "Posez une question, regardez 4 intelligences délibérer, obtenez un verdict de consensus.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080504",
+  "theme_color": "#080504",
+  "categories": ["productivity", "education", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ]
+}
