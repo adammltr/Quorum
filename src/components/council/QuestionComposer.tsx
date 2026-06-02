@@ -84,8 +84,8 @@ export function QuestionComposer({
 
       {/* Suggestions : montrent en un coup d'œil les dilemmes où les modèles divergent */}
       {suggestions.length > 0 && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="font-mono text-xs text-text-subtle">Ou explorez :</span>
+        <div className="flex flex-wrap items-center justify-center gap-2 lg:flex-nowrap">
+          <span className="font-mono text-xs text-text-subtle whitespace-nowrap">Ou explorez :</span>
           {suggestions.map((q) => (
             <button
               key={q}

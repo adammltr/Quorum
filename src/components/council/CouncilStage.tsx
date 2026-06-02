@@ -126,7 +126,7 @@ export function CouncilStage(): ReactNode {
     <div className="relative flex min-h-dvh flex-col overflow-hidden">
       {/* Atmosphère — lueur ambre discrète, non décorative */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-1/4 left-1/2 h-[55vh] w-[80vw] max-w-[60rem] -translate-x-1/2 rounded-full bg-gold-dim blur-[140px]" />
+        <div className="absolute -top-1/4 left-1/2 h-[55vh] w-[80vw] max-w-[60rem] -translate-x-1/2 rounded-full bg-gold-dim blur-[140px] lg:h-[65vh] lg:max-w-[80rem] xl:max-w-[96rem]" />
       </div>
 
       {/* Barre supérieure */}
@@ -157,25 +157,25 @@ export function CouncilStage(): ReactNode {
             // ── État initial : composer héroïque centré ──
             <motion.section
               key="hero"
-              className="flex flex-1 flex-col items-center justify-center gap-8 text-center"
+              className="flex flex-1 flex-col items-center justify-center gap-8 text-center lg:gap-12 lg:py-24"
               initial={reduced ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduced ? { opacity: 0 } : { opacity: 0, y: -12 }}
               transition={ease}
             >
-              <div className="flex max-w-2xl flex-col items-center gap-4">
-                <p className="font-mono text-sm tracking-wider text-text-muted uppercase">
+              <div className="flex max-w-2xl flex-col items-center gap-4 lg:max-w-4xl lg:gap-6">
+                <p className="font-mono text-sm tracking-wider text-text-muted uppercase lg:text-base">
                   Le consensus des intelligences
                 </p>
-                <h1 className="font-display text-4xl leading-tight text-text sm:text-5xl">
+                <h1 className="font-display text-4xl leading-tight text-text sm:text-5xl lg:text-7xl xl:text-8xl">
                   Convoquez l’assemblée.
                 </h1>
                 {/* Micro-onboarding : 1 ligne, le reste se comprend en regardant */}
-                <p className="max-w-md text-lg leading-relaxed text-text-muted">
+                <p className="max-w-md text-lg leading-relaxed text-text-muted lg:max-w-xl lg:text-xl">
                   4 IA répondent, s’évaluent en aveugle, puis tranchent.
                 </p>
               </div>
-              <div className="flex w-full max-w-2xl flex-col items-center gap-3">
+              <div className="flex w-full max-w-2xl flex-col items-center gap-3 lg:max-w-3xl">
                 {council && (
                   <div className="flex items-center gap-2 rounded-full border border-gold/30 bg-gold-dim/40 px-3 py-1.5">
                     <Users aria-hidden="true" className="size-3.5 text-gold" />
