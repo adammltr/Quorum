@@ -137,13 +137,16 @@ async function runReal(
 
   if (!res.ok || !res.body) {
     let message = `L’assemblée a refusé la requête (${res.status}).`
+    let code = String(res.status)
     try {
-      const data = (await res.json()) as { message?: string }
-      if (data?.message) message = data.message
+      // Forme serveur : { error: { code, message, details? } } (voir _shared/errors.ts).
+      const data = (await res.json()) as { error?: { code?: string; message?: string } }
+      if (data?.error?.message) message = data.error.message
+      if (data?.error?.code) code = data.error.code
     } catch {
-      // corps non-JSON : on garde le message générique
+      // corps non-JSON : on garde le message/code génériques
     }
-    onEvent({ type: 'error', code: String(res.status), message })
+    onEvent({ type: 'error', code, message })
     return
   }
 

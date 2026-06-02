@@ -15,6 +15,7 @@ import { Stage3Verdict } from './Stage3Verdict'
 import { TrustBadges } from './TrustBadges'
 import { SaveResultPrompt } from './SaveResultPrompt'
 import { ShareDialog } from './ShareDialog'
+import { usePaywall } from '@/components/billing/use-paywall'
 import { useCouncil, type RunPhase } from '@/hooks/useCouncil'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { ease } from '@/lib/motion'
@@ -35,7 +36,9 @@ function stageLabel(phase: RunPhase, stage: 1 | 2 | 3): string {
 
 export function CouncilStage(): ReactNode {
   const reduced = useReducedMotion()
-  const { phase, stage, runId, models, reviews, borda, verdict, error, submit, reset } = useCouncil()
+  const { phase, stage, runId, models, reviews, borda, verdict, error, errorCode, hasSeenVerdict, submit, reset } =
+    useCouncil()
+  const { openPaywall } = usePaywall()
   const compact = useMediaQuery('(max-width: 639px)')
   const [runKey, setRunKey] = useState(0)
   const [question, setQuestion] = useState('')
@@ -79,6 +82,15 @@ export function CouncilStage(): ReactNode {
   // Soft paywall : proposé seulement après le 1er verdict rendu (moment de valeur).
   const showSavePrompt =
     phase === 'done' && verdict.consensusScore !== null && !savePromptDismissed
+
+  // Soft paywall contextuel : sur quota atteint (uniquement après un verdict vécu)
+  // ou sur modèle premium sans BYOK. Jamais un blocage sec.
+  const paywallHandled =
+    (errorCode === 'quota_exceeded' && hasSeenVerdict) || errorCode === 'premium_requires_byok'
+  useEffect(() => {
+    if (errorCode === 'quota_exceeded' && hasSeenVerdict) openPaywall('quota')
+    else if (errorCode === 'premium_requires_byok') openPaywall('premium_model')
+  }, [errorCode, hasSeenVerdict, openPaywall])
 
   // Récit fluide : amène en douceur la nouvelle étape dans le champ de vision.
   const stage2Ref = useRef<HTMLDivElement>(null)
@@ -218,7 +230,7 @@ export function CouncilStage(): ReactNode {
                 </Button>
               </div>
 
-              {error && (
+              {error && !paywallHandled && (
                 <FadeIn>
                   <div
                     role="alert"

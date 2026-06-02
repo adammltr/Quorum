@@ -18,21 +18,22 @@ import type {
   RunStatus,
 } from '@/lib/db-helpers'
 import { isFreeModel } from '@/lib/models-catalog'
+import { FREE_TIER, PRO_TIER } from '@/config/billing'
 
 /** Sérialise des délégués typés vers la colonne jsonb (`delegates`). */
 function delegatesJson(delegates: Delegate[]): Json {
   return delegates as unknown as Json
 }
 
-// ─── Plafonds freemium (miroir UI des triggers serveur) ─────────────────────
+// ─── Plafonds freemium (dérivés de la config centrale — cf. @/config/billing) ─
 export const FREE_LIMITS = {
-  collections: 2,
-  councils: 1,
-  historyDays: 7,
+  collections: FREE_TIER.collections,
+  councils: FREE_TIER.councils,
+  historyDays: FREE_TIER.historyDays,
 } as const
 
 export const PRO_LIMITS = {
-  councils: 10,
+  councils: PRO_TIER.councils,
 } as const
 
 // ─── Formes métier ──────────────────────────────────────────────────────────

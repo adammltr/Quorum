@@ -279,6 +279,7 @@ export type Database = {
           last_active_date: string | null
           pro_expires_at: string | null
           streak_count: number
+          trial_started_at: string | null
           updated_at: string
         }
         Insert: {
@@ -291,6 +292,7 @@ export type Database = {
           last_active_date?: string | null
           pro_expires_at?: string | null
           streak_count?: number
+          trial_started_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -303,6 +305,7 @@ export type Database = {
           last_active_date?: string | null
           pro_expires_at?: string | null
           streak_count?: number
+          trial_started_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -599,6 +602,7 @@ export type Database = {
         Args: { p_day?: string; p_run_id: string }
         Returns: Json
       }
+      start_reverse_trial: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never

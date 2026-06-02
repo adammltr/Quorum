@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ModelSelect } from './ModelSelect'
+import { usePaywall } from '@/components/billing/use-paywall'
 import { slotAccent } from '@/components/council/slots'
 import { COUNCIL_SLOTS, FREE_MODELS, modelLabel } from '@/lib/models-catalog'
 import type { CouncilDraft, CouncilRecord } from '@/lib/account'
@@ -40,6 +41,7 @@ export function CouncilComposer({
   const [chairman, setChairman] = useState(initial?.chairman_model ?? FREE_MODELS[0]!.id)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const { openPaywall } = usePaywall()
 
   const setSlotModel = (slot: string, modelId: string) => {
     setDelegates((prev) =>
@@ -150,8 +152,16 @@ export function CouncilComposer({
 
             {!isPro && (
               <p className="text-xs text-text-subtle">
-                Les modèles premium sont réservés au plan PRO (clé personnelle). En gratuit, compose
-                avec les modèles ouverts.
+                Les modèles premium sont réservés au plan PRO. En gratuit, compose avec les modèles
+                ouverts —{' '}
+                <button
+                  type="button"
+                  onClick={() => openPaywall('premium_model')}
+                  className="text-gold underline-offset-4 hover:underline"
+                >
+                  découvrir PRO
+                </button>
+                .
               </p>
             )}
             {error && (

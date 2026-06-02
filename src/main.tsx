@@ -5,6 +5,7 @@ import './index.css'
 import { App } from './App'
 import { ThemeProvider } from './components/theme/ThemeProvider'
 import { AuthProvider } from './components/auth/AuthProvider'
+import { PaywallProvider } from './components/billing/PaywallProvider'
 
 const rootElement = document.getElementById('root')
 if (rootElement === null) {
@@ -16,7 +17,9 @@ createRoot(rootElement).render(
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <PaywallProvider>
+            <App />
+          </PaywallProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

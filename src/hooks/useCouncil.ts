@@ -73,6 +73,14 @@ export interface CouncilState {
   /** Verdict du Chairman (Stage 3), body streamé. */
   verdict: VerdictState
   error: string | null
+  /** Code d'erreur stable (ex. `quota_exceeded`) — pilote l'UI contextuelle. */
+  errorCode: string | null
+  /**
+   * true dès qu'un verdict a été rendu au moins une fois dans la session. Latch
+   * volontaire (jamais remis à false) : prérequis du soft paywall (SPEC §7 —
+   * jamais de mur avant un premier moment de valeur), conservé même après reset.
+   */
+  hasSeenVerdict: boolean
   submit: (question: string, opts?: SubmitOptions) => void
   reset: () => void
 }
@@ -106,6 +114,8 @@ export function useCouncil(): CouncilState {
   const [borda, setBorda] = useState<Record<string, number> | null>(null)
   const [verdict, setVerdict] = useState<VerdictState>(EMPTY_VERDICT)
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<string | null>(null)
+  const [hasSeenVerdict, setHasSeenVerdict] = useState<boolean>(false)
 
   // ── Tampons hors-React (drainés par rAF) ──────────────────────────────────
   const buffers = useRef<Record<string, string>>({})
@@ -240,6 +250,8 @@ export function useCouncil(): CouncilState {
             consensusScore: e.consensus_score,
             disagreements: e.disagreements,
           }))
+          // Latch « moment de valeur vécu » (jamais ré-éteint) — gouverne le paywall.
+          setHasSeenVerdict(true)
           // Mesure clé du first-run : temps perçu jusqu'au premier verdict.
           if (!verdictTracked.current) {
             verdictTracked.current = true
@@ -255,6 +267,7 @@ export function useCouncil(): CouncilState {
           break
         case 'error':
           setError(e.message)
+          setErrorCode(e.code)
           setPhase('error')
           break
         default:
@@ -284,6 +297,7 @@ export function useCouncil(): CouncilState {
       startedAt.current = performance.now()
       verdictTracked.current = false
       setError(null)
+      setErrorCode(null)
       setStage(1)
       setRunId(null)
       // Rendu optimiste : délégués du council choisi, sinon assemblée démo.
@@ -305,6 +319,7 @@ export function useCouncil(): CouncilState {
   const reset = useCallback(() => {
     cleanup()
     setError(null)
+    setErrorCode(null)
     setStage(1)
     setRunId(null)
     setModels([])
@@ -316,5 +331,7 @@ export function useCouncil(): CouncilState {
 
   useEffect(() => cleanup, [cleanup])
 
-  return { phase, stage, runId, models, reviews, borda, verdict, error, submit, reset }
+  return {
+    phase, stage, runId, models, reviews, borda, verdict, error, errorCode, hasSeenVerdict, submit, reset,
+  }
 }

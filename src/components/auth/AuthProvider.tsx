@@ -12,6 +12,8 @@ import type { Profile } from '@/lib/db-helpers'
 import { isMockMode } from '@/lib/council-client'
 import { appUrl } from '@/lib/share'
 import { track } from '@/lib/analytics'
+import { REVERSE_TRIAL } from '@/config/billing'
+import { maybeStartReverseTrial } from '@/lib/billing'
 import { AuthContext, type AuthContextValue, type MagicLinkResult } from './auth-context'
 
 type Client = SupabaseClient<Database>
@@ -33,6 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const clientRef = useRef<Client | null>(null)
+  // Garantit une seule tentative de reverse-trial par session (la RPC est de
+  // toute façon idempotente côté serveur : jamais de second octroi).
+  const trialAttempted = useRef<boolean>(false)
 
   const getClient = useCallback(async (): Promise<Client> => {
     if (clientRef.current) return clientRef.current
@@ -44,7 +49,26 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
 
   const loadProfile = useCallback(async (client: Client, uid: string) => {
     const { data } = await client.from('profiles').select('*').eq('id', uid).maybeSingle()
-    setProfile((data as Profile | null) ?? null)
+    const p = (data as Profile | null) ?? null
+    setProfile(p)
+
+    // Reverse-trial (sous flag) : offert UNE fois à un compte inscrit non-PRO
+    // qui n'a jamais eu de trial. L'octroi réel + l'idempotence sont serveur.
+    if (
+      REVERSE_TRIAL.enabled &&
+      !trialAttempted.current &&
+      p &&
+      !p.is_anonymous &&
+      !isProProfile(p) &&
+      p.trial_started_at === null
+    ) {
+      trialAttempted.current = true
+      const outcome = await maybeStartReverseTrial()
+      if (outcome === 'started') {
+        const { data: fresh } = await client.from('profiles').select('*').eq('id', uid).maybeSingle()
+        setProfile((fresh as Profile | null) ?? p)
+      }
+    }
   }, [])
 
   // ── Bootstrap + abonnement aux changements de session ──

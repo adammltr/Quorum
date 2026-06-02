@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Clock, FolderOpen, LogOut, Sparkles, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/use-auth'
+import { usePaywall } from '@/components/billing/use-paywall'
 import { AuthDialog } from '@/components/auth/AuthDialog'
 
 const itemClass =
@@ -21,6 +22,7 @@ function initial(name: string | null, email: string | null): string {
  */
 export function AccountMenu(): ReactNode {
   const { ready, isAuthenticated, isPro, email, profile, signOut } = useAuth()
+  const { openPaywall } = usePaywall()
   const [authOpen, setAuthOpen] = useState(false)
 
   if (!ready) {
@@ -92,6 +94,19 @@ export function AccountMenu(): ReactNode {
               Mes councils
             </Link>
           </DropdownMenu.Item>
+
+          {!isPro && (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              <DropdownMenu.Item
+                className={`${itemClass} text-gold data-[highlighted]:text-gold`}
+                onSelect={() => openPaywall('generic')}
+              >
+                <Sparkles aria-hidden="true" className="size-4 text-gold" />
+                Passer en PRO
+              </DropdownMenu.Item>
+            </>
+          )}
 
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
 
