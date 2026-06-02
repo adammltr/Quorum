@@ -73,6 +73,9 @@ temp/
 *.orig
 TODO.local.md
 
+# ─── Captures d'écran de dev (artefacts, non versionnés) ────
+screenshots-mock/
+
 # ─── TypeScript ─────────────────────────────────────────────
 *.tsbuildinfo
 
