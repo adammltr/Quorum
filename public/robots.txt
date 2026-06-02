@@ -4,4 +4,4 @@ Allow: /
 # Pages internes non destinées à l'indexation
 Disallow: /_designsystem
 
-Sitemap: /sitemap.xml
+Sitemap: https://quorum.app/sitemap.xml
