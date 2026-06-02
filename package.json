@@ -13,6 +13,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
     "@tailwindcss/vite": "^4.3.0",
+    "@vercel/og": "^0.6.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",
@@ -33,6 +34,7 @@
     "@fontsource/instrument-serif": "^5.2.8",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
+    "@vercel/node": "^3.2.24",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.3.0",

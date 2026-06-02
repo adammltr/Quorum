@@ -1,0 +1,9 @@
+[functions.council]
+import_map = "./functions/deno.json"
+
+# Générateur de QdJ : appelé par pg_cron (pas un utilisateur). On désactive la
+# vérification du JWT Supabase — la fonction est protégée par son propre
+# CRON_SECRET (header Authorization), vérifié dans le code.
+[functions.generate-daily-questions]
+import_map = "./functions/deno.json"
+verify_jwt = false

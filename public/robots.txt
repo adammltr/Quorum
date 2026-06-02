@@ -1,0 +1,7 @@
+# Quorum — robots
+User-agent: *
+Allow: /
+# Pages internes non destinées à l'indexation
+Disallow: /_designsystem
+
+Sitemap: /sitemap.xml

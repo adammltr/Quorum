@@ -1,0 +1,172 @@
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
+import type { Database } from '@/lib/database.types'
+import type { Profile } from '@/lib/db-helpers'
+import { isMockMode } from '@/lib/council-client'
+import { appUrl } from '@/lib/share'
+import { track } from '@/lib/analytics'
+import { AuthContext, type AuthContextValue, type MagicLinkResult } from './auth-context'
+
+type Client = SupabaseClient<Database>
+
+function isProProfile(p: Profile | null): boolean {
+  if (!p?.is_pro) return false
+  return p.pro_expires_at === null || new Date(p.pro_expires_at) > new Date()
+}
+
+/**
+ * Source de vérité de la session. S'appuie sur l'Anonymous Auth : un visiteur a
+ * toujours un auth.uid() (anonyme), et la conversion en compte (email/OAuth)
+ * conserve ce même id — donc tous les runs/collections/councils déjà créés
+ * restent rattachés, sans migration de données.
+ */
+export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
+  const configured = !isMockMode()
+  const [ready, setReady] = useState<boolean>(!configured)
+  const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const clientRef = useRef<Client | null>(null)
+
+  const getClient = useCallback(async (): Promise<Client> => {
+    if (clientRef.current) return clientRef.current
+    const mod = await import('@/lib/supabase')
+    await mod.ensureSession()
+    clientRef.current = mod.supabase
+    return mod.supabase
+  }, [])
+
+  const loadProfile = useCallback(async (client: Client, uid: string) => {
+    const { data } = await client.from('profiles').select('*').eq('id', uid).maybeSingle()
+    setProfile((data as Profile | null) ?? null)
+  }, [])
+
+  // ── Bootstrap + abonnement aux changements de session ──
+  useEffect(() => {
+    if (!configured) return
+    let unsub: (() => void) | undefined
+    let cancelled = false
+
+    void (async () => {
+      const client = await getClient()
+      const {
+        data: { user: u },
+      } = await client.auth.getUser()
+      if (cancelled) return
+      setUser(u)
+      if (u) await loadProfile(client, u.id)
+      setReady(true)
+
+      const { data } = client.auth.onAuthStateChange((_event, session) => {
+        const next = session?.user ?? null
+        setUser(next)
+        if (next) void loadProfile(client, next.id)
+        else setProfile(null)
+      })
+      unsub = () => data.subscription.unsubscribe()
+    })()
+
+    return () => {
+      cancelled = true
+      unsub?.()
+    }
+  }, [configured, getClient, loadProfile])
+
+  const refresh = useCallback(async () => {
+    if (!configured || !user) return
+    const client = await getClient()
+    await loadProfile(client, user.id)
+  }, [configured, user, getClient, loadProfile])
+
+  const sendMagicLink = useCallback(
+    async (email: string): Promise<MagicLinkResult> => {
+      const trimmed = email.trim()
+      if (!configured) {
+        return { ok: false, mode: 'convert', message: 'Authentification indisponible en mode démo.' }
+      }
+      const client = await getClient()
+      const emailRedirectTo = `${appUrl()}/`
+
+      // Session anonyme → on RATTACHE l'email (même auth.uid, données préservées).
+      if (user?.is_anonymous) {
+        const { error } = await client.auth.updateUser({ email })
+        if (!error) {
+          track('signup_intent', { source: 'magic_link', method: 'convert' })
+          return { ok: true, mode: 'convert' }
+        }
+        // Email déjà rattaché à un compte : on bascule sur une connexion classique.
+        const taken = /registered|already|exist/i.test(error.message)
+        if (!taken) return { ok: false, mode: 'convert', message: error.message }
+      }
+
+      // Compte existant (autre appareil, ou email déjà pris) → lien de connexion.
+      const { error } = await client.auth.signInWithOtp({
+        email: trimmed,
+        options: { emailRedirectTo, shouldCreateUser: true },
+      })
+      if (error) return { ok: false, mode: 'signin', message: error.message }
+      track('signup_intent', { source: 'magic_link', method: 'signin' })
+      return { ok: true, mode: 'signin' }
+    },
+    [configured, user, getClient],
+  )
+
+  const signInWithGoogle = useCallback(async () => {
+    if (!configured) return
+    const client = await getClient()
+    const redirectTo = `${appUrl()}/`
+    track('signup_intent', { source: 'oauth_google' })
+
+    // Anonyme → rattacher l'identité Google (préserve les données).
+    if (user?.is_anonymous) {
+      const { error } = await client.auth.linkIdentity({
+        provider: 'google',
+        options: { redirectTo },
+      })
+      if (!error) return
+      // Manual linking désactivé ou identité déjà liée : connexion classique.
+    }
+    await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
+  }, [configured, user, getClient])
+
+  const signOut = useCallback(async () => {
+    if (!configured) return
+    const client = await getClient()
+    await client.auth.signOut()
+    setProfile(null)
+    // Réouvre immédiatement une session anonyme : l'app reste utilisable.
+    const { ensureSession } = await import('@/lib/supabase')
+    await ensureSession()
+    const {
+      data: { user: u },
+    } = await client.auth.getUser()
+    setUser(u)
+    if (u) await loadProfile(client, u.id)
+  }, [configured, getClient, loadProfile])
+
+  const value = useMemo<AuthContextValue>(() => {
+    const isAnonymous = user?.is_anonymous ?? true
+    return {
+      ready,
+      configured,
+      userId: user?.id ?? null,
+      email: user?.email ?? null,
+      isAnonymous,
+      isAuthenticated: !!user && !isAnonymous,
+      isPro: isProProfile(profile),
+      profile,
+      sendMagicLink,
+      signInWithGoogle,
+      signOut,
+      refresh,
+    }
+  }, [ready, configured, user, profile, sendMagicLink, signInWithGoogle, signOut, refresh])
+
+  return <AuthContext value={value}>{children}</AuthContext>
+}

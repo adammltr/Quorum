@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/q/:slug", "destination": "/api/share?slug=:slug" },
+    { "source": "/jour", "destination": "/api/daily" },
+    { "source": "/jour/archive", "destination": "/api/daily?view=archive" },
+    { "source": "/jour/:day", "destination": "/api/daily?day=:day" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/((?!api/|assets/|fonts/).*)", "destination": "/index.html" }
+  ]
+}

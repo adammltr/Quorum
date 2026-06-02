@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // `supabase/functions` = code Deno ; `api` = fonctions Vercel (Node/edge,
+  // typecheckées par Vercel au déploiement). Hors périmètre eslint du front.
+  globalIgnores(['dist', 'supabase/functions', 'api']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

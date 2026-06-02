@@ -153,6 +153,73 @@
       background: var(--surface-raised);
     }
   }
+
+  /* ── Curseur de frappe (streaming Stage 1) ── */
+  .stream-caret {
+    display: inline-block;
+    width: 0.5ch;
+    height: 1.05em;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+    border-radius: 1px;
+    background: var(--text);
+    animation: caret-blink 1.05s steps(1) infinite;
+  }
+
+  /* ── Points de réflexion (état « pending ») ── */
+  .thinking-dot {
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: var(--radius-full);
+    background: var(--text-muted);
+    animation: thinking-pulse 1.3s ease-in-out infinite;
+  }
+
+  /* ── Skeleton premium (chargement, jamais de spinner générique) ── */
+  .skeleton-line {
+    border-radius: var(--radius-sm);
+    background: linear-gradient(
+      90deg,
+      var(--surface-raised) 25%,
+      var(--border) 37%,
+      var(--surface-raised) 63%
+    );
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
 
 /* Respect de prefers-reduced-motion : pas de blur GPU coûteux, pas d'anim */
