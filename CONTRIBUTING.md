@@ -17,8 +17,8 @@ Merci de l'intérêt. Ce guide couvre tout ce qu'il faut pour contribuer correct
 ## Installation locale
 
 ```bash
-git clone https://github.com/[org]/quorum.git
-cd quorum
+git clone https://github.com/adammltr/Quorum.git
+cd Quorum
 
 # Copie les variables d'environnement
 cp .env.example .env.local
@@ -49,11 +49,18 @@ pnpm dev
 
 3. **Code**, en respectant les règles de `CLAUDE.md`.
 
-4. Avant de pousser, vérifie :
+4. Avant de pousser, vérifie le front (à la racine) :
    ```bash
-   pnpm typecheck   # zéro erreur TypeScript
+   pnpm typecheck   # zéro erreur TypeScript (tsc -b --noEmit)
    pnpm lint        # zéro erreur ESLint
-   pnpm build       # build prod sans erreur
+   pnpm build       # build prod sans erreur (tsc -b && vite build)
+   ```
+
+   Et, si tu as touché aux Edge Functions, depuis `supabase/functions/` :
+   ```bash
+   deno task check  # type-check de council/index.ts
+   deno task lint   # deno lint
+   deno task test   # tests Deno (_tests/)
    ```
 
 5. Ouvre une **Pull Request** vers `main` avec une description claire (quoi / pourquoi / comment tester).
@@ -139,11 +146,17 @@ Chaque push déclenche `.github/workflows/gitleaks.yml` qui scanne l'historique 
 
 ## Tests
 
+Les tests actuels couvrent la logique des Edge Functions (parsing du peer-review,
+agrégation Borda). Ils tournent avec Deno, depuis `supabase/functions/` :
+
 ```bash
-pnpm test          # vitest en mode watch
-pnpm test:run      # vitest une seule fois
-pnpm test:e2e      # playwright (requiert `pnpm dev` en parallèle)
+cd supabase/functions
+deno task test     # exécute _tests/ (ex. ranking_test.ts)
 ```
+
+> Il n'y a pas encore de suite front (vitest) ni e2e (playwright) — c'est au
+> backlog (voir la roadmap du README). Les contributions sur ce front sont
+> bienvenues.
 
 ---
 
