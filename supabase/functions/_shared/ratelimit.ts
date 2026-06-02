@@ -13,10 +13,21 @@ import { RATE_LIMIT } from './models.ts'
 
 const SALT = Deno.env.get('RATE_LIMIT_SALT') ?? 'quorum-default-salt'
 
-/** Extrait l'IP cliente depuis les en-têtes du proxy (premier hop). */
+/**
+ * Extrait l'IP cliente depuis les en-têtes du proxy.
+ *
+ * On prend le DERNIER hop de `x-forwarded-for` : le proxy de confiance (Supabase)
+ * ajoute l'IP réelle du client en FIN de chaîne, alors qu'un client malveillant
+ * ne peut injecter des valeurs qu'en TÊTE. Prendre le premier hop serait donc
+ * usurpable (rotation du hash → contournement du rate limit). On retombe sur
+ * `x-real-ip` si `x-forwarded-for` est absent.
+ */
 export function clientIp(req: Request): string {
   const fwd = req.headers.get('x-forwarded-for')
-  if (fwd) return fwd.split(',')[0].trim()
+  if (fwd) {
+    const hops = fwd.split(',').map((h) => h.trim()).filter(Boolean)
+    if (hops.length > 0) return hops[hops.length - 1]
+  }
   return req.headers.get('x-real-ip') ?? 'unknown'
 }
 

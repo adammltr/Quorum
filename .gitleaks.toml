@@ -28,7 +28,10 @@ tags = ["api-key", "supabase"]
 id = "env-file-secrets"
 description = "Fichier .env commité avec de vraies valeurs"
 path = '''\.env(\.\w+)?$'''
-regex = '''(API_KEY|SECRET|PASSWORD|TOKEN|SERVICE_ROLE)\s*=\s*(?!REMPLACE_|votre_|your_|sk-or-EXEMPLE|eyJSEMPLE)[^\s"']+'''
+# NB : le moteur re2 de gitleaks ne supporte PAS les lookahead (?!…). Les
+# placeholders (REMPLACE_PAR_, eyJSEMPLE, sk-or-EXEMPLE…) sont donc neutralisés
+# via [allowlist].regexes ci-dessous, pas par un lookahead dans cette regex.
+regex = '''(API_KEY|SECRET|PASSWORD|TOKEN|SERVICE_ROLE)\s*=\s*\S+'''
 tags = ["env", "secret"]
 
 # ─── Exclusions ───────────────────────────────────────────────────────
