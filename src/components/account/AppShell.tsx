@@ -37,7 +37,7 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
           Quorum
         </Link>
         <div className="flex items-center gap-3">
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="hidden sm:inline-flex">
             <Link to="/">
               <Plus aria-hidden="true" />
               Nouvelle question
