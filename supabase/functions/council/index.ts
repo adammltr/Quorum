@@ -32,13 +32,14 @@ import {
   computeConsensus,
   parseFinalRanking,
 } from '../_shared/ranking.ts'
-import { streamChatCompletion } from '../_shared/openrouter.ts'
+import { streamLLMCall } from '../_shared/openrouter.ts'
 import {
   DEFAULT_CHAIRMAN,
   DEFAULT_FREE_DELEGATES,
+  DEMO_PROVIDER_BY_MODEL,
   INPUT_LIMITS,
-  isFreeModel,
   MIN_SUCCESSFUL_DELEGATES,
+  PROVIDER_CONFIG,
 } from '../_shared/models.ts'
 import type {
   CouncilSnapshot,
@@ -113,19 +114,10 @@ async function handleCouncil(req: Request): Promise<Response> {
   // ── 5. Résolution du council (RLS) ────────────────────────────────────────
   const { snapshot, councilId } = await resolveCouncil(userClient, service, body.councilId)
 
-  // ── 6. Résolution de la clé + autorisation des modèles ────────────────────
-  const { apiKey, mode, premiumAllowed } = await resolveApiKey(service, user.id, body.mode)
-  if (!premiumAllowed) {
-    const premium = [...snapshot.delegates.map((d) => d.model_id), snapshot.chairman_model]
-      .filter((m) => !isFreeModel(m))
-    if (premium.length > 0) {
-      throw new CouncilError(
-        'premium_requires_byok',
-        'Ces modèles requièrent ta propre clé OpenRouter (BYOK).',
-        { models: premium },
-      )
-    }
-  }
+  // ── 6. Résolution des credentials (démo multi-provider OU BYOK OpenRouter) ─
+  const creds = await resolveCredentials(service, user.id, body.mode)
+  const mode = creds.mode
+  const target = (modelId: string) => resolveTarget(modelId, creds)
 
   // ── 7. Persistance initiale : question + run ──────────────────────────────
   const questionId = await insertQuestion(service, question, user.id)
@@ -145,7 +137,7 @@ async function handleCouncil(req: Request): Promise<Response> {
     async start(controller) {
       const emit = new SseEmitter(controller)
       try {
-        await runDeliberation({ emit, service, apiKey, snapshot, runId, question, mode, signal: ac.signal })
+        await runDeliberation({ emit, service, target, snapshot, runId, question, mode, signal: ac.signal })
       } catch (err) {
         const { code, message } = normalize(err)
         emit.send({ type: 'error', code, message })
@@ -166,10 +158,17 @@ async function handleCouncil(req: Request): Promise<Response> {
 // Orchestration des 3 stages
 // ════════════════════════════════════════════════════════════════════════
 
+/** Cible d'appel LLM résolue par modèle (base URL + clé du provider). */
+interface LLMTarget {
+  baseUrl?: string
+  apiKey: string
+}
+
 interface DeliberationCtx {
   emit: SseEmitter
   service: SupabaseClient
-  apiKey: string
+  /** Résout la cible (provider démo OU OpenRouter BYOK) pour un model_id donné. */
+  target: (modelId: string) => LLMTarget
   snapshot: CouncilSnapshot
   runId: string
   question: string
@@ -228,13 +227,13 @@ async function runDeliberation(ctx: DeliberationCtx): Promise<void> {
 
 /** Stage 1 : fan-out parallèle streaming, tolérant aux pannes. */
 async function runStage1(ctx: DeliberationCtx): Promise<DelegateOutcome[]> {
-  const { emit, snapshot, apiKey, question, signal, service, runId } = ctx
+  const { emit, snapshot, target, question, signal, service, runId } = ctx
 
   const tasks = snapshot.delegates.map(async (delegate): Promise<DelegateOutcome> => {
     const startedAt = Date.now()
     try {
-      const { content, tokensIn, tokensOut } = await streamChatCompletion(
-        { apiKey, model: delegate.model_id, messages: buildStage1(question), signal },
+      const { content, tokensIn, tokensOut } = await streamLLMCall(
+        { ...target(delegate.model_id), model: delegate.model_id, messages: buildStage1(question), signal },
         (delta) => emit.send({ type: 'token', slot: delegate.slot, model_id: delegate.model_id, delta }),
       )
       const status: ResponseStatus = 'complete'
@@ -267,7 +266,7 @@ async function runStage2(
   ctx: DeliberationCtx,
   successful: DelegateOutcome[],
 ): Promise<BordaBallot[]> {
-  const { emit, apiKey, question, signal, service, runId } = ctx
+  const { emit, target, question, signal, service, runId } = ctx
   const ballots: BordaBallot[] = []
 
   const tasks = successful.map(async (reviewer) => {
@@ -284,8 +283,11 @@ async function runStage2(
     let parseOk = false
     let ranking: RankingEntry[] = []
     try {
-      const res = await streamChatCompletion({
-        apiKey, model: reviewer.delegate.model_id, messages: buildStage2(question, presented), signal,
+      const res = await streamLLMCall({
+        ...target(reviewer.delegate.model_id),
+        model: reviewer.delegate.model_id,
+        messages: buildStage2(question, presented),
+        signal,
       })
       raw = res.content
       const parsed = parseFinalRanking(raw, labels)
@@ -318,7 +320,7 @@ async function runStage3(
   successful: DelegateOutcome[],
   bordaScores: Record<string, number>,
 ): Promise<{ score: number; disagreements: string[] }> {
-  const { emit, apiKey, question, signal, service, runId, snapshot } = ctx
+  const { emit, target, question, signal, service, runId, snapshot } = ctx
 
   const answers = successful.map((o) => ({
     slot: o.delegate.slot, label: o.delegate.label, content: o.content,
@@ -326,8 +328,8 @@ async function runStage3(
 
   let raw = ''
   try {
-    const res = await streamChatCompletion(
-      { apiKey, model: snapshot.chairman_model, messages: buildStage3Chairman(question, answers, bordaScores), signal },
+    const res = await streamLLMCall(
+      { ...target(snapshot.chairman_model), model: snapshot.chairman_model, messages: buildStage3Chairman(question, answers, bordaScores), signal },
       (delta) => emit.send({ type: 'verdict_token', delta }),
     )
     raw = res.content
@@ -431,12 +433,24 @@ async function resolveCouncil(
   }
 }
 
-/** Résout la clé OpenRouter : serveur (`:free`) ou BYOK déchiffrée (premium). */
-async function resolveApiKey(
+/** Credentials résolus : mode démo (multi-provider) OU BYOK (OpenRouter). */
+interface Credentials {
+  mode: 'demo' | 'byok'
+  /** Clé OpenRouter de l'utilisateur (BYOK uniquement). */
+  byokKey: string | null
+}
+
+/**
+ * Résout le mode d'appel :
+ *   • `byok`  → clé OpenRouter personnelle déchiffrée (tous les modèles passent par OpenRouter).
+ *   • `demo`  → providers gratuits serveur (Cerebras / Groq / Gemini), clés par env.
+ * En cas d'échec BYOK (déchiffrement impossible), on retombe proprement en démo.
+ */
+async function resolveCredentials(
   service: SupabaseClient,
   userId: string,
   requestedMode?: 'demo' | 'byok',
-): Promise<{ apiKey: string; mode: 'demo' | 'byok'; premiumAllowed: boolean }> {
+): Promise<Credentials> {
   if (requestedMode === 'byok') {
     const { data } = await service
       .from('user_secrets')
@@ -445,14 +459,34 @@ async function resolveApiKey(
       .maybeSingle()
     if (data?.has_byok && data.openrouter_key_encrypted) {
       try {
-        const apiKey = await decryptByokKey(data.openrouter_key_encrypted)
-        return { apiKey, mode: 'byok', premiumAllowed: true }
+        const byokKey = await decryptByokKey(data.openrouter_key_encrypted)
+        return { mode: 'byok', byokKey }
       } catch {
         // Déchiffrement impossible : on retombe proprement en mode démo.
       }
     }
   }
-  return { apiKey: mustEnv('OPENROUTER_API_KEY'), mode: 'demo', premiumAllowed: false }
+  return { mode: 'demo', byokKey: null }
+}
+
+/**
+ * Cible d'appel pour un modèle donné :
+ *   • BYOK → OpenRouter (baseUrl par défaut) avec la clé de l'utilisateur.
+ *   • Démo → provider gratuit déduit du model_id (Cerebras / Groq / Gemini).
+ */
+function resolveTarget(modelId: string, creds: Credentials): LLMTarget {
+  if (creds.mode === 'byok' && creds.byokKey) {
+    return { apiKey: creds.byokKey } // baseUrl absent → OpenRouter
+  }
+  const provider = DEMO_PROVIDER_BY_MODEL[modelId]
+  if (!provider) {
+    throw new CouncilError(
+      'internal',
+      `Aucun provider gratuit configuré pour le modèle « ${modelId} » en mode démo.`,
+    )
+  }
+  const cfg = PROVIDER_CONFIG[provider]
+  return { baseUrl: cfg.baseUrl, apiKey: mustEnv(cfg.keyEnv) }
 }
 
 // ════════════════════════════════════════════════════════════════════════

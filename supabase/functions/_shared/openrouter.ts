@@ -1,31 +1,39 @@
 /**
- * Client OpenRouter (chat completions) en STREAMING, tolérant aux pannes.
+ * Client LLM (chat completions) en STREAMING, tolérant aux pannes.
+ *
+ * Cible n'importe quel endpoint OpenAI-compatible (OpenRouter pour le BYOK,
+ * Cerebras / Groq / Gemini pour le mode démo) via l'option `baseUrl`.
  *
  *   • Timeout par appel (AbortController), combiné à un éventuel signal externe.
  *   • Retry backoff exponentiel sur erreurs TRANSITOIRES (429 / 5xx) UNIQUEMENT
  *     tant qu'aucun token n'a encore été produit (sinon on dupliquerait la sortie).
- *   • Parsing incrémental du flux SSE OpenRouter (`data: {json}` / `[DONE]`).
+ *   • Parsing incrémental du flux SSE OpenAI (`data: {json}` / `[DONE]`).
  *
  * La clé API n'est JAMAIS journalisée (ni en cas d'erreur).
  */
 
 import {
+  OPENROUTER_BASE_URL,
   OPENROUTER_REFERER,
   OPENROUTER_TITLE,
-  OPENROUTER_URL,
   RETRY,
   TIMEOUT_MS,
 } from './models.ts'
 import { CouncilError } from './errors.ts'
 import type { ChatMessage } from './prompts.ts'
 
-export interface ChatCompletionOptions {
+export interface LLMCallOptions {
   apiKey: string
   model: string
   messages: ChatMessage[]
   /** Signal externe (annulation globale du run). */
   signal?: AbortSignal
   temperature?: number
+  /**
+   * Base URL OpenAI-compatible (SANS `/chat/completions`).
+   * Si absent, cible OpenRouter (utilisé pour le BYOK).
+   */
+  baseUrl?: string
 }
 
 export interface ChatCompletionResult {
@@ -48,10 +56,14 @@ function buildSignal(external?: AbortSignal): { signal: AbortSignal; cancel: () 
  * Lance une complétion en streaming. Appelle `onDelta` à chaque fragment de
  * texte. Retourne le texte complet accumulé + l'usage (si fourni par l'upstream).
  */
-export async function streamChatCompletion(
-  opts: ChatCompletionOptions,
+export async function streamLLMCall(
+  opts: LLMCallOptions,
   onDelta?: (delta: string) => void,
 ): Promise<ChatCompletionResult> {
+  const baseUrl = opts.baseUrl ?? OPENROUTER_BASE_URL
+  const endpoint = `${baseUrl}/chat/completions`
+  // En-têtes d'attribution propres à OpenRouter (inutiles/ignorés ailleurs).
+  const isOpenRouter = baseUrl === OPENROUTER_BASE_URL
   let lastError: unknown
 
   for (let attempt = 1; attempt <= RETRY.maxAttempts; attempt++) {
@@ -59,13 +71,14 @@ export async function streamChatCompletion(
     let produced = false
 
     try {
-      const res = await fetch(OPENROUTER_URL, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': OPENROUTER_REFERER,
-          'X-Title': OPENROUTER_TITLE,
+          ...(isOpenRouter
+            ? { 'HTTP-Referer': OPENROUTER_REFERER, 'X-Title': OPENROUTER_TITLE }
+            : {}),
         },
         body: JSON.stringify({
           model: opts.model,

@@ -1,41 +1,69 @@
 /**
  * Configuration CENTRALISÉE du moteur de consensus.
  *
- * ⚠️  Source unique de vérité pour : la composition par défaut du council démo,
- * l'allowlist premium (BYOK), les timeouts, le retry et le rate limiting.
- * Pour changer les modèles, MODIFIER ICI (et garder le seed SQL 0013 aligné).
+ * ⚠️  Source unique de vérité pour : les providers gratuits du mode démo,
+ * la composition par défaut du council, les timeouts, le retry et le rate limiting.
+ * Pour changer les modèles, MODIFIER ICI (et garder le seed SQL 0013 + le preset
+ * « Assemblée démo » en base alignés).
  *
- * ⚠️  Les slugs ":free" d'OpenRouter ÉVOLUENT régulièrement (modèles retirés /
- * ajoutés). Vérifier la liste à jour sur :
- *   https://openrouter.ai/collections/free-models
- * Les défauts ci-dessous sont alignés sur la migration de seed
- * `supabase/migrations/20260601090013_seed.sql` (council preset « Assemblée démo »).
+ * Le mode démo route désormais vers PLUSIEURS providers gratuits OpenAI-compatibles
+ * (Cerebras / Groq / Gemini) plutôt que les modèles `:free` d'OpenRouter (trop
+ * limités). Le BYOK reste inchangé : il passe par OpenRouter avec la clé de l'utilisateur.
  */
+
+/** Providers gratuits OpenAI-compatibles utilisés en mode démo. */
+export type ProviderName = 'cerebras' | 'groq' | 'gemini'
+
+export interface ProviderInfo {
+  /** Base URL OpenAI-compatible (SANS le suffixe `/chat/completions`). */
+  baseUrl: string
+  /** Nom de la variable d'environnement contenant la clé serveur du provider. */
+  keyEnv: string
+}
+
+/** Routage des providers du mode démo : base URL + variable d'env de la clé. */
+export const PROVIDER_CONFIG: Record<ProviderName, ProviderInfo> = {
+  cerebras: { baseUrl: 'https://api.cerebras.ai/v1', keyEnv: 'CEREBRAS_API_KEY' },
+  groq: { baseUrl: 'https://api.groq.com/openai/v1', keyEnv: 'GROQ_API_KEY' },
+  gemini: { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', keyEnv: 'GEMINI_API_KEY' },
+}
 
 /** Un délégué de l'assemblée (Stage 1 & 2). Forme alignée sur `Delegate` (db-helpers.ts). */
 export interface DelegateConfig {
   slot: string
+  /** Provider gratuit ciblé en mode démo. */
+  provider: ProviderName
   model_id: string
   label: string
 }
 
 /**
- * Composition par défaut du mode démo — UNIQUEMENT des modèles `:free`.
+ * Composition par défaut du mode démo — providers gratuits multi-fournisseurs.
  * Fallback si aucun council n'est résolu en base. Doit refléter le seed 0013.
  */
 export const DEFAULT_FREE_DELEGATES: readonly DelegateConfig[] = [
-  { slot: 'A', model_id: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B' },
-  { slot: 'B', model_id: 'qwen/qwen3-next-80b-a3b-instruct:free', label: 'Qwen3 Next 80B' },
-  { slot: 'C', model_id: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B' },
-  { slot: 'D', model_id: 'openai/gpt-oss-120b:free', label: 'GPT-OSS 120B' },
+  { slot: 'A', provider: 'cerebras', model_id: 'zai-glm-4.7', label: 'GLM 4.7' },
+  { slot: 'B', provider: 'groq', model_id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
+  { slot: 'C', provider: 'gemini', model_id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+  { slot: 'D', provider: 'cerebras', model_id: 'gpt-oss-120b', label: 'GPT-OSS 120B' },
 ] as const
 
-/** Chairman par défaut (Stage 3) — `:free` en mode démo. */
-export const DEFAULT_CHAIRMAN = 'meta-llama/llama-3.3-70b-instruct:free'
+/** Chairman par défaut (Stage 3) — Groq en mode démo. */
+export const DEFAULT_CHAIRMAN = 'llama-3.3-70b-versatile'
+export const DEFAULT_CHAIRMAN_PROVIDER: ProviderName = 'groq'
+
+/**
+ * Map `model_id → provider` pour le routage du mode démo (multi-provider).
+ * Dérivée des délégués par défaut + du Chairman. Un modèle de démo absent de
+ * cette table n'a pas de provider configuré (erreur explicite à l'appel).
+ */
+export const DEMO_PROVIDER_BY_MODEL: Readonly<Record<string, ProviderName>> = {
+  ...Object.fromEntries(DEFAULT_FREE_DELEGATES.map((d) => [d.model_id, d.provider])),
+  [DEFAULT_CHAIRMAN]: DEFAULT_CHAIRMAN_PROVIDER,
+}
 
 /**
  * Modèles premium débloqués UNIQUEMENT en BYOK (clé personnelle de l'utilisateur).
- * Le mode démo (clé serveur) les refuse pour protéger la clé `:free`.
  * Liste indicative — étendre selon les besoins produit.
  */
 export const PREMIUM_ALLOWLIST: readonly string[] = [
@@ -48,11 +76,6 @@ export const PREMIUM_ALLOWLIST: readonly string[] = [
   'x-ai/grok-3-mini',
   'deepseek/deepseek-chat',
 ] as const
-
-/** true si le slug correspond à un modèle gratuit OpenRouter (suffixe `:free`). */
-export function isFreeModel(modelId: string): boolean {
-  return modelId.trim().toLowerCase().endsWith(':free')
-}
 
 // ─── Paramètres d'orchestration ────────────────────────────────────────────
 
@@ -91,8 +114,8 @@ export const RATE_LIMIT = {
 /** Barème Borda (Stage 2) : 1er = 3 pts, 2e = 2 pts, 3e = 1 pt (3 pairs notés). */
 export const BORDA_POINTS: readonly number[] = [3, 2, 1] as const
 
-/** Endpoint OpenRouter (chat completions). */
-export const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
+/** Base URL OpenRouter (OpenAI-compatible). Cible par défaut du BYOK. */
+export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 /** En-têtes d'attribution OpenRouter (bonnes pratiques, non secrets). */
 export const OPENROUTER_REFERER = Deno.env.get('OPENROUTER_REFERER') ?? 'https://quorum.app'

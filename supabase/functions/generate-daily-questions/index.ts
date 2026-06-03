@@ -22,8 +22,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
-import { streamChatCompletion } from '../_shared/openrouter.ts'
-import { DEFAULT_CHAIRMAN } from '../_shared/models.ts'
+import { streamLLMCall } from '../_shared/openrouter.ts'
+import { DEFAULT_CHAIRMAN, DEFAULT_CHAIRMAN_PROVIDER, PROVIDER_CONFIG } from '../_shared/models.ts'
 import { FALLBACK_QUESTIONS, type GeneratedQuestion } from './fallback.ts'
 
 /** Council officiel de référence de la QdJ (preset « Assemblée démo », seed 0013). */
@@ -161,11 +161,13 @@ function parseGenerated(raw: string): GeneratedQuestion[] {
   return out
 }
 
-async function generateViaOpenRouter(count: number, avoid: string[]): Promise<GeneratedQuestion[]> {
-  const apiKey = mustEnv('OPENROUTER_API_KEY')
+async function generateViaLLM(count: number, avoid: string[]): Promise<GeneratedQuestion[]> {
+  // Même provider gratuit que le Chairman du mode démo (Groq), via env serveur.
+  const cfg = PROVIDER_CONFIG[DEFAULT_CHAIRMAN_PROVIDER]
   // Température élevée : on cherche de la variété, pas du déterminisme.
-  const { content } = await streamChatCompletion({
-    apiKey,
+  const { content } = await streamLLMCall({
+    baseUrl: cfg.baseUrl,
+    apiKey: mustEnv(cfg.keyEnv),
     model: DEFAULT_CHAIRMAN,
     temperature: 1.0,
     messages: [
@@ -297,7 +299,7 @@ Deno.serve(async (req) => {
     let openrouterFailed = false
     let openrouterError: string | null = null
     try {
-      generated = await generateViaOpenRouter(missing.length, recentBodies.slice(0, 30))
+      generated = await generateViaLLM(missing.length, recentBodies.slice(0, 30))
     } catch (err) {
       // On bascule sur la banque de secours, mais on remonte la cause (sans
       // jamais exposer la clé) pour l'observabilité (logs + réponse cron).

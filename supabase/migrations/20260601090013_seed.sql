@@ -13,14 +13,14 @@ values (
   '00000000-0000-0000-0000-0000000c0de1',
   null,
   'Assemblée démo',
-  'Quatre modèles OpenRouter gratuits + Chairman. Council par défaut du mode démo.',
+  'Quatre modèles gratuits multi-provider (Cerebras / Groq / Gemini) + Chairman. Council par défaut du mode démo.',
   '[
-    {"slot":"A","model_id":"meta-llama/llama-3.3-70b-instruct:free","label":"Llama 3.3 70B"},
-    {"slot":"B","model_id":"qwen/qwen3-next-80b-a3b-instruct:free","label":"Qwen3 Next 80B"},
-    {"slot":"C","model_id":"google/gemma-4-31b-it:free","label":"Gemma 4 31B"},
-    {"slot":"D","model_id":"openai/gpt-oss-120b:free","label":"GPT-OSS 120B"}
+    {"slot":"A","model_id":"zai-glm-4.7","label":"GLM 4.7"},
+    {"slot":"B","model_id":"llama-3.3-70b-versatile","label":"Llama 3.3 70B"},
+    {"slot":"C","model_id":"gemini-2.5-flash-lite","label":"Gemini 2.5 Flash Lite"},
+    {"slot":"D","model_id":"gpt-oss-120b","label":"GPT-OSS 120B"}
   ]'::jsonb,
-  'meta-llama/llama-3.3-70b-instruct:free',
+  'llama-3.3-70b-versatile',
   true,
   true
 )
