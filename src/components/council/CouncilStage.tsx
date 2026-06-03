@@ -196,13 +196,15 @@ export function CouncilStage(): ReactNode {
                 {/* Rendez-vous quotidien — la même question pour tous, chaque jour. */}
                 <Link
                   to="/jour"
-                  className="inline-flex items-center gap-1.5 text-sm text-text-muted underline-offset-4 transition-colors hover:text-text hover:underline"
+                  className="mt-8 inline-flex items-center gap-2 font-display text-lg text-text underline-offset-4 transition-colors hover:text-gold hover:underline"
                 >
-                  <CalendarDays aria-hidden="true" className="size-4 text-gold" />
+                  <CalendarDays aria-hidden="true" className="size-5 text-gold" />
                   Ou répondez à la Question du Jour
                 </Link>
               </div>
-              <TrustBadges />
+              <div className="mt-12 lg:mt-16">
+                <TrustBadges />
+              </div>
             </motion.section>
           ) : (
             // ── État actif : question épinglée + assemblée ──
