@@ -45,7 +45,7 @@ export const DEFAULT_FREE_DELEGATES: readonly DelegateConfig[] = [
   { slot: 'A', provider: 'groq', model_id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B' },
   { slot: 'B', provider: 'groq', model_id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
   { slot: 'C', provider: 'gemini', model_id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
-  { slot: 'D', provider: 'cerebras', model_id: 'gpt-oss-120b', label: 'GPT-OSS 120B' },
+  { slot: 'D', provider: 'groq', model_id: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B' },
 ] as const
 
 /** Chairman par défaut (Stage 3) — Groq en mode démo. */

@@ -15,7 +15,7 @@ set
     {"slot":"A","model_id":"llama-3.1-8b-instant","label":"Llama 3.1 8B"},
     {"slot":"B","model_id":"llama-3.3-70b-versatile","label":"Llama 3.3 70B"},
     {"slot":"C","model_id":"gemini-2.5-flash-lite","label":"Gemini 2.5 Flash Lite"},
-    {"slot":"D","model_id":"gpt-oss-120b","label":"GPT-OSS 120B"}
+    {"slot":"D","model_id":"openai/gpt-oss-120b","label":"GPT-OSS 120B"}
   ]'::jsonb,
   chairman_model = 'llama-3.3-70b-versatile'
 where id = '00000000-0000-0000-0000-0000000c0de1';
