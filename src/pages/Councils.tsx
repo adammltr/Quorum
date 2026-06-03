@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Copy, Crown, Pencil, Play, Plus, Sparkles, Trash2, Users } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Copy, Crown, Pencil, Play, Plus, Sparkles, Trash2, Users, X } from 'lucide-react'
 import { AppShell } from '@/components/account/AppShell'
 import { GlassCard } from '@/components/primitives'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { slotAccent } from '@/components/council/slots'
 import { useCouncils } from '@/hooks/useCouncils'
 import { useAuth } from '@/components/auth/use-auth'
 import { modelLabel } from '@/lib/models-catalog'
+import { easeMedium } from '@/lib/motion'
 import type { CouncilDraft, CouncilRecord } from '@/lib/account'
 
 function CouncilCard({
@@ -25,13 +27,62 @@ function CouncilCard({
   onDelete: (id: string) => Promise<void>
 }): ReactNode {
   const [confirming, setConfirming] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const reduced = useReducedMotion()
+  const hasDescription = Boolean(council.description)
   return (
-    <GlassCard className="flex flex-col gap-4 p-5">
+    <GlassCard className="flex flex-col gap-4 p-5 transition-transform duration-200 hover:scale-[1.02] hover:border-gold/50">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <h3 className="font-display text-xl leading-snug text-text">{council.name}</h3>
-          {council.description && (
-            <p className="line-clamp-2 text-sm text-text-muted">{council.description}</p>
+          {hasDescription && (
+            <>
+              {/* Aperçu tronqué — cliquable pour déplier la description complète. */}
+              {!expanded && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded(true)}
+                  className="text-left outline-none"
+                  aria-expanded={false}
+                  aria-label="Afficher la description complète"
+                >
+                  <p className="line-clamp-2 text-sm text-text-muted transition-colors hover:text-text">
+                    {council.description}
+                  </p>
+                </button>
+              )}
+              {/* Accordéon animé (Motion, pas de modal). */}
+              <AnimatePresence initial={false}>
+                {expanded && (
+                  <motion.div
+                    key="desc"
+                    className="overflow-hidden"
+                    initial={reduced ? false : { height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    transition={easeMedium}
+                  >
+                    <div className="flex items-start gap-2 pt-1">
+                      {/* Double-clic pour refermer (en plus du ✕). */}
+                      <p
+                        onDoubleClick={() => setExpanded(false)}
+                        className="flex-1 text-sm leading-relaxed text-text-muted"
+                      >
+                        {council.description}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setExpanded(false)}
+                        className="grid size-5 shrink-0 place-items-center rounded-full text-text-muted outline-none hover:text-text focus-visible:ring-2 focus-visible:ring-gold/50"
+                        aria-label="Refermer la description"
+                      >
+                        <X aria-hidden="true" className="size-3.5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
           )}
         </div>
         {council.is_preset ? (

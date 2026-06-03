@@ -179,6 +179,23 @@ export async function deleteRun(runId: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+/**
+ * Nombre de questions déjà consommées AUJOURD'HUI (jour UTC, comme le serveur).
+ * Lecture seule (n'incrémente pas) — sert au compteur discret du composer.
+ * Renvoie 0 si aucune ligne (pas encore de question aujourd'hui).
+ */
+export async function fetchTodayUsage(): Promise<number> {
+  const supabase = await db()
+  const today = new Date().toISOString().slice(0, 10) // date UTC (YYYY-MM-DD)
+  const { data, error } = await supabase
+    .from('daily_usage')
+    .select('question_count')
+    .eq('day', today)
+    .maybeSingle<{ question_count: number }>()
+  if (error) throw new Error(error.message)
+  return data?.question_count ?? 0
+}
+
 // ─── Collections ────────────────────────────────────────────────────────────
 
 interface RawCollectionRow {

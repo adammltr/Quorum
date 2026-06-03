@@ -16,8 +16,13 @@ import { TrustBadges } from './TrustBadges'
 import { SaveResultPrompt } from './SaveResultPrompt'
 import { ShareDialog } from './ShareDialog'
 import { usePaywall } from '@/components/billing/use-paywall'
+import { useAuth } from '@/components/auth/use-auth'
+import { isAdminEmail } from '@/lib/admin'
 import { useCouncil, type RunPhase } from '@/hooks/useCouncil'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { QuotaExceeded } from './QuotaExceeded'
+import { QuotaCounter } from './QuotaCounter'
+import { FREE_TIER } from '@/config/billing'
 import { ease } from '@/lib/motion'
 
 /** Libellé de l'étape en cours — discret, en mono. */
@@ -36,9 +41,11 @@ function stageLabel(phase: RunPhase, stage: 1 | 2 | 3): string {
 
 export function CouncilStage(): ReactNode {
   const reduced = useReducedMotion()
-  const { phase, stage, runId, models, reviews, borda, verdict, error, errorCode, hasSeenVerdict, submit, reset } =
+  const { phase, stage, runId, models, reviews, borda, verdict, error, errorCode, quota, submit, reset } =
     useCouncil()
   const { openPaywall } = usePaywall()
+  const { email, isAuthenticated } = useAuth()
+  const isAdmin = isAdminEmail(email)
   const compact = useMediaQuery('(max-width: 639px)')
   const [runKey, setRunKey] = useState(0)
   const [question, setQuestion] = useState('')
@@ -77,20 +84,26 @@ export function CouncilStage(): ReactNode {
   }, [setSearchParams])
 
   const started = phase !== 'idle'
-  const showStage2 = started && stage >= 2
-  const showStage3 = started && (stage >= 3 || verdict.consensusScore !== null)
+  // Quota atteint : état dédié (page centrée), jamais les skeletons d'IA.
+  const showQuota = started && errorCode === 'quota_exceeded'
+  const showStage2 = started && !showQuota && stage >= 2
+  const showStage3 = started && !showQuota && (stage >= 3 || verdict.consensusScore !== null)
   // Soft paywall : proposé seulement après le 1er verdict rendu (moment de valeur).
   const showSavePrompt =
     phase === 'done' && verdict.consensusScore !== null && !savePromptDismissed
 
-  // Soft paywall contextuel : sur quota atteint (uniquement après un verdict vécu)
-  // ou sur modèle premium sans BYOK. Jamais un blocage sec.
-  const paywallHandled =
-    (errorCode === 'quota_exceeded' && hasSeenVerdict) || errorCode === 'premium_requires_byok'
+  // Le quota a sa propre page (avec bouton BYOK) → on ne double pas la bannière.
+  const paywallHandled = showQuota || errorCode === 'premium_requires_byok'
+  // Soft paywall contextuel : sur modèle premium sans BYOK uniquement (le quota
+  // est traité par la page dédiée QuotaExceeded). Jamais un blocage sec.
   useEffect(() => {
-    if (errorCode === 'quota_exceeded' && hasSeenVerdict) openPaywall('quota')
-    else if (errorCode === 'premium_requires_byok') openPaywall('premium_model')
-  }, [errorCode, hasSeenVerdict, openPaywall])
+    if (errorCode === 'premium_requires_byok') openPaywall('premium_model')
+  }, [errorCode, openPaywall])
+
+  // Plafond de repli pour la page quota selon le statut (compte vs anonyme).
+  const fallbackLimit = isAuthenticated
+    ? FREE_TIER.dailyQuestionsAccount
+    : FREE_TIER.dailyQuestionsAnon
 
   // Récit fluide : amène en douceur la nouvelle étape dans le champ de vision.
   const stage2Ref = useRef<HTMLDivElement>(null)
@@ -140,12 +153,14 @@ export function CouncilStage(): ReactNode {
           Quorum
         </button>
         <div className="flex items-center gap-3">
-          <Link
-            to="/_designsystem"
-            className="hidden font-mono text-xs text-text-subtle underline-offset-4 hover:text-text-muted hover:underline sm:inline"
-          >
-            design system
-          </Link>
+          {isAdmin && (
+            <Link
+              to="/_designsystem"
+              className="hidden font-mono text-xs text-text-subtle underline-offset-4 hover:text-text-muted hover:underline sm:inline"
+            >
+              design system
+            </Link>
+          )}
           <ThemeToggle />
           <AccountMenu />
         </div>
@@ -192,6 +207,10 @@ export function CouncilStage(): ReactNode {
                     </button>
                   </div>
                 )}
+                {/* Compteur discret du quota du jour (compte connecté non-PRO). */}
+                <div className="flex w-full justify-end">
+                  <QuotaCounter refreshKey={runKey} />
+                </div>
                 <QuestionComposer onSubmit={handleSubmit} variant="hero" autoFocus />
                 {/* Rendez-vous quotidien — la même question pour tous, chaque jour. */}
                 <Link
@@ -246,7 +265,17 @@ export function CouncilStage(): ReactNode {
                 </FadeIn>
               )}
 
-              <CouncilAssembly models={models} runKey={runKey} compact={compact} />
+              {/* Quota atteint : page d'état dédiée — pas de cartes IA animées. */}
+              {showQuota ? (
+                <QuotaExceeded
+                  quota={quota}
+                  fallbackLimit={fallbackLimit}
+                  onByok={() => openPaywall('quota')}
+                  onReset={handleReset}
+                />
+              ) : (
+                <CouncilAssembly models={models} runKey={runKey} compact={compact} />
+              )}
 
               {/* Stage 2 — peer-review aveugle */}
               {showStage2 && (

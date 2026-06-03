@@ -34,7 +34,7 @@ export type CouncilEvent =
       borda_scores: Record<string, number>
     }
   | { type: 'done'; run_id: string; status: string }
-  | { type: 'error'; code: string; message: string }
+  | { type: 'error'; code: string; message: string; details?: Record<string, unknown> }
 
 export interface StreamParams {
   question: string
@@ -138,15 +138,19 @@ async function runReal(
   if (!res.ok || !res.body) {
     let message = `L’assemblée a refusé la requête (${res.status}).`
     let code = String(res.status)
+    let details: Record<string, unknown> | undefined
     try {
       // Forme serveur : { error: { code, message, details? } } (voir _shared/errors.ts).
-      const data = (await res.json()) as { error?: { code?: string; message?: string } }
+      const data = (await res.json()) as {
+        error?: { code?: string; message?: string; details?: Record<string, unknown> }
+      }
       if (data?.error?.message) message = data.error.message
       if (data?.error?.code) code = data.error.code
+      if (data?.error?.details) details = data.error.details
     } catch {
       // corps non-JSON : on garde le message/code génériques
     }
-    onEvent({ type: 'error', code, message })
+    onEvent({ type: 'error', code, message, details })
     return
   }
 

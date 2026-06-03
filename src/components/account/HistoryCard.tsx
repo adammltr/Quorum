@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Bookmark, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GlassCard } from '@/components/primitives'
@@ -49,8 +50,14 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
   }
 
   return (
-    <GlassCard className="flex flex-col gap-4 p-5">
-      <div className="flex items-start gap-4">
+    <GlassCard className="flex flex-col gap-4 p-5 transition-colors hover:border-gold/40">
+      {/* Zone cliquable : ouvre le résultat complet (/run/:id). Les actions
+          (partager, épingler, supprimer) restent isolées dans la barre du bas. */}
+      <Link
+        to={`/run/${item.id}`}
+        className="flex items-start gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+        aria-label={`Ouvrir la délibération : ${item.question}`}
+      >
         {/* Score de consensus — pastille compacte */}
         {score !== null ? (
           <div
@@ -76,7 +83,7 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
             <p className="line-clamp-2 text-sm leading-relaxed text-text-muted">{item.verdict.body}</p>
           )}
         </div>
-      </div>
+      </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">

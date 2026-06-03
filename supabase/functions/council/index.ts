@@ -108,7 +108,12 @@ async function handleCouncil(req: Request): Promise<Response> {
   const { data: usage, error: usageErr } = await userClient.rpc('increment_question_usage')
   if (usageErr) throw new CouncilError('unauthorized', 'Quota indisponible pour cette session.')
   if (usage && (usage as { allowed: boolean }).allowed === false) {
-    throw new CouncilError('quota_exceeded', 'Quota quotidien atteint. Reviens demain ou passe en BYOK.')
+    const u = usage as { remaining?: number; limit?: number; count?: number }
+    throw new CouncilError(
+      'quota_exceeded',
+      'Quota quotidien atteint. Reviens demain ou passe en BYOK.',
+      { remaining: u.remaining ?? 0, limit: u.limit, count: u.count },
+    )
   }
 
   // ── 5. Résolution du council (RLS) ────────────────────────────────────────

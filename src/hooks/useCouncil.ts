@@ -60,6 +60,15 @@ export interface VerdictState {
 
 const EMPTY_VERDICT: VerdictState = { body: '', consensusScore: null, disagreements: [] }
 
+/** État du quota quotidien, renseigné quand le serveur renvoie `quota_exceeded`. */
+export interface QuotaInfo {
+  remaining: number
+  /** Plafond du jour (5 anon / 10 compte) — absent si le serveur ne l'a pas fourni. */
+  limit: number | null
+  /** Questions déjà consommées aujourd'hui — absent si non fourni. */
+  count: number | null
+}
+
 export interface CouncilState {
   phase: RunPhase
   stage: 1 | 2 | 3
@@ -75,6 +84,8 @@ export interface CouncilState {
   error: string | null
   /** Code d'erreur stable (ex. `quota_exceeded`) — pilote l'UI contextuelle. */
   errorCode: string | null
+  /** Détail du quota quotidien quand `errorCode === 'quota_exceeded'`, sinon null. */
+  quota: QuotaInfo | null
   /**
    * true dès qu'un verdict a été rendu au moins une fois dans la session. Latch
    * volontaire (jamais remis à false) : prérequis du soft paywall (SPEC §7 —
@@ -115,6 +126,7 @@ export function useCouncil(): CouncilState {
   const [verdict, setVerdict] = useState<VerdictState>(EMPTY_VERDICT)
   const [error, setError] = useState<string | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
+  const [quota, setQuota] = useState<QuotaInfo | null>(null)
   const [hasSeenVerdict, setHasSeenVerdict] = useState<boolean>(false)
 
   // ── Tampons hors-React (drainés par rAF) ──────────────────────────────────
@@ -269,6 +281,26 @@ export function useCouncil(): CouncilState {
           setError(e.message)
           setErrorCode(e.code)
           setPhase('error')
+          // Quota atteint : on coupe NET le flux (jamais de Chairman fantôme).
+          // On stoppe le drain rAF, on vide les tampons et on annule la requête
+          // pour qu'aucun token / verdict en attente n'avance encore les stages.
+          if (e.code === 'quota_exceeded') {
+            handle.current?.cancel()
+            handle.current = null
+            if (rafId.current !== null) {
+              cancelAnimationFrame(rafId.current)
+              rafId.current = null
+            }
+            buffers.current = {}
+            verdictBuffer.current = ''
+            pendingStatus.current = {}
+            const d = e.details ?? {}
+            setQuota({
+              remaining: typeof d.remaining === 'number' ? d.remaining : 0,
+              limit: typeof d.limit === 'number' ? d.limit : null,
+              count: typeof d.count === 'number' ? d.count : null,
+            })
+          }
           break
         default:
           break
@@ -298,6 +330,7 @@ export function useCouncil(): CouncilState {
       verdictTracked.current = false
       setError(null)
       setErrorCode(null)
+      setQuota(null)
       setStage(1)
       setRunId(null)
       // Rendu optimiste : délégués du council choisi, sinon assemblée démo.
@@ -320,6 +353,7 @@ export function useCouncil(): CouncilState {
     cleanup()
     setError(null)
     setErrorCode(null)
+    setQuota(null)
     setStage(1)
     setRunId(null)
     setModels([])
@@ -332,6 +366,6 @@ export function useCouncil(): CouncilState {
   useEffect(() => cleanup, [cleanup])
 
   return {
-    phase, stage, runId, models, reviews, borda, verdict, error, errorCode, hasSeenVerdict, submit, reset,
+    phase, stage, runId, models, reviews, borda, verdict, error, errorCode, quota, hasSeenVerdict, submit, reset,
   }
 }

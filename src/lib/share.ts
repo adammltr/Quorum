@@ -38,15 +38,34 @@ export function shareUrl(slug: string): string {
  * Crée (ou réutilise) le partage public d'un run et renvoie son slug.
  * Idempotent côté serveur. En mode démo, renvoie un slug factice.
  */
+/** Délai au-delà duquel la création du lien est considérée indisponible. */
+const SHARE_TIMEOUT_MS = 10_000
+
 export async function createShare(runId: string): Promise<string> {
   if (isMockMode() || runId === 'mock-run') return DEMO_SLUG
   const { supabase, ensureSession } = await import('@/lib/supabase')
   await ensureSession()
-  const { data, error } = await supabase.rpc('create_share', { p_run_id: runId })
-  if (error || !data) {
-    throw new Error(error?.message ?? 'Partage indisponible pour le moment.')
+
+  // Garde-fou : au-delà de 10 s on coupe la requête et on remonte une erreur
+  // claire plutôt que de laisser l'UI tourner à l'infini.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), SHARE_TIMEOUT_MS)
+  try {
+    const { data, error } = await supabase
+      .rpc('create_share', { p_run_id: runId })
+      .abortSignal(controller.signal)
+    if (error || !data) {
+      throw new Error(error?.message ?? 'Partage indisponible pour le moment.')
+    }
+    return data
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error('Lien temporairement indisponible', { cause: err })
+    }
+    throw err
+  } finally {
+    clearTimeout(timer)
   }
-  return data
 }
 
 // ─── Grille d'emoji (style Wordle) ──────────────────────────────────────────

@@ -57,6 +57,64 @@ export async function fetchSharedRun(slug: string): Promise<PublicRunBundle | nu
   return data as unknown as PublicRunBundle
 }
 
+/** Ligne brute d'un run détenu, embeds inclus (RLS owner-only). */
+interface RawOwnedRun {
+  id: string
+  status: string
+  created_at: string
+  council_snapshot: CouncilSnapshot
+  question: { body: string } | { body: string }[] | null
+  responses: PublicResponse[] | null
+  reviews: { reviewer_slot: string; ranking: RankingEntry[] }[] | null
+  verdict: PublicVerdict | PublicVerdict[] | null
+}
+
+function pickOne<T>(v: T | T[] | null | undefined): T | null {
+  if (Array.isArray(v)) return v[0] ?? null
+  return v ?? null
+}
+
+/**
+ * Charge un run COMPLET détenu par l'utilisateur (page /run/{runId}).
+ *
+ * Contrairement à `fetchSharedRun` (RPC publique via slug), on lit ici
+ * directement les tables : la RLS owner-only garantit qu'un utilisateur ne lit
+ * que ses propres runs. Renvoie `null` si le run est introuvable / non détenu.
+ */
+export async function fetchOwnedRun(runId: string): Promise<PublicRunBundle | null> {
+  if (isMockMode() || runId === 'mock-run') return MOCK_BUNDLE
+
+  const { supabase } = await import('@/lib/supabase')
+  const { data, error } = await supabase
+    .from('runs')
+    .select(
+      'id, status, created_at, council_snapshot, ' +
+        'question:questions!inner(body), ' +
+        'responses:model_responses(slot, model_id, content, status, latency_ms), ' +
+        'reviews:reviews(reviewer_slot, ranking), ' +
+        'verdict:verdicts(body, consensus_score, disagreements, borda_scores)',
+    )
+    .eq('id', runId)
+    .maybeSingle<RawOwnedRun>()
+  if (error) throw new Error(error.message)
+  if (!data) return null
+
+  const q = pickOne(data.question)
+  const verdict = pickOne(data.verdict)
+  return {
+    run: {
+      id: data.id,
+      status: data.status,
+      created_at: data.created_at,
+      council_snapshot: data.council_snapshot,
+    },
+    question: q?.body ?? '',
+    responses: (data.responses ?? []).slice().sort((a, b) => a.slot.localeCompare(b.slot)),
+    reviews: (data.reviews ?? []).map((r) => ({ reviewer_slot: r.reviewer_slot, ranking: r.ranking })),
+    verdict,
+  }
+}
+
 // ─── Bundle de démonstration (mode mock) ─────────────────────────────────────
 
 const MOCK_SNAPSHOT: CouncilSnapshot = {
