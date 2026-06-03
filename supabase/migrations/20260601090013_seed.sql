@@ -16,9 +16,9 @@ values (
   'Quatre modèles OpenRouter gratuits + Chairman. Council par défaut du mode démo.',
   '[
     {"slot":"A","model_id":"meta-llama/llama-3.3-70b-instruct:free","label":"Llama 3.3 70B"},
-    {"slot":"B","model_id":"mistralai/mistral-7b-instruct:free","label":"Mistral 7B"},
-    {"slot":"C","model_id":"google/gemma-2-9b-it:free","label":"Gemma 2 9B"},
-    {"slot":"D","model_id":"qwen/qwen3-235b-a22b:free","label":"Qwen3 235B"}
+    {"slot":"B","model_id":"qwen/qwen3-next-80b-a3b-instruct:free","label":"Qwen3 Next 80B"},
+    {"slot":"C","model_id":"google/gemma-4-31b-it:free","label":"Gemma 4 31B"},
+    {"slot":"D","model_id":"openai/gpt-oss-120b:free","label":"GPT-OSS 120B"}
   ]'::jsonb,
   'meta-llama/llama-3.3-70b-instruct:free',
   true,
