@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Dialog } from 'radix-ui'
-import { Check, Copy, Link2, Loader2, Share2, X } from 'lucide-react'
+import { Check, Copy, Link2, Loader2, RotateCcw, Share2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { track } from '@/lib/analytics'
 import { slotAccent } from './slots'
@@ -56,33 +56,38 @@ export function ShareDialog({
 
   const grid = buildEmojiGrid(slots, borda)
 
-  // Crée le partage à la première ouverture (puis le réutilise — RPC idempotente).
+  // Crée (ou réutilise) le partage. Extrait pour être rejouable via « Réessayer ».
+  const loadShare = useCallback(async () => {
+    setState({ kind: 'loading' })
+    track('share_opened', { run_id: runId })
+    try {
+      const slug = await createShare(runId)
+      // Garde-fou supplémentaire : un slug vide est traité comme une erreur.
+      if (!slug) throw new Error('Lien de partage introuvable.')
+      const url = shareUrl(slug)
+      const text = buildShareText({ question, consensusScore, grid, url })
+      setState({ kind: 'ready', slug, url, text })
+      track('share_created', { slug })
+    } catch (err) {
+      // Le détail exact est déjà loggé dans createShare ; ici message présentable.
+      console.error('[ShareDialog] création du lien échouée:', err)
+      setState({ kind: 'error', message: 'Impossible de créer le lien. Réessayer ?' })
+    }
+  }, [runId, question, consensusScore, grid])
+
+  // Lance la création à la première ouverture (idempotente côté serveur). On
+  // diffère via microtâche : le setState('loading') ne part pas du corps
+  // synchrone de l'effet (évite les rendus en cascade).
   useEffect(() => {
     if (!open || state.kind === 'loading' || state.kind === 'ready') return
     let cancelled = false
-    const run = async () => {
-      setState({ kind: 'loading' })
-      track('share_opened', { run_id: runId })
-      try {
-        const slug = await createShare(runId)
-        if (cancelled) return
-        const url = shareUrl(slug)
-        const text = buildShareText({ question, consensusScore, grid, url })
-        setState({ kind: 'ready', slug, url, text })
-        track('share_created', { slug })
-      } catch (err) {
-        if (cancelled) return
-        setState({
-          kind: 'error',
-          message: err instanceof Error ? err.message : 'Partage indisponible.',
-        })
-      }
-    }
-    void run()
+    void Promise.resolve().then(() => {
+      if (!cancelled) void loadShare()
+    })
     return () => {
       cancelled = true
     }
-  }, [open, runId, question, consensusScore, grid, state.kind])
+  }, [open, state.kind, loadShare])
 
   const handleCopy = useCallback(
     async (kind: 'link' | 'text', value: string) => {
@@ -176,9 +181,16 @@ export function ShareDialog({
           </div>
 
           {state.kind === 'error' ? (
-            <p role="alert" className="text-sm text-dissent">
-              {state.message}
-            </p>
+            <div
+              role="alert"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dissent/40 bg-dissent-dim px-4 py-3"
+            >
+              <p className="text-sm text-text">{state.message}</p>
+              <Button variant="outline" size="sm" onClick={() => void loadShare()}>
+                <RotateCcw aria-hidden="true" />
+                Réessayer
+              </Button>
+            </div>
           ) : state.kind === 'ready' ? (
             <>
               {/* Texte pré-rempli — éditable visuellement, copiable */}

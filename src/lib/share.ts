@@ -39,32 +39,37 @@ export function shareUrl(slug: string): string {
  * Idempotent côté serveur. En mode démo, renvoie un slug factice.
  */
 /** Délai au-delà duquel la création du lien est considérée indisponible. */
-const SHARE_TIMEOUT_MS = 10_000
+const SHARE_TIMEOUT_MS = 8_000
 
 export async function createShare(runId: string): Promise<string> {
   if (isMockMode() || runId === 'mock-run') return DEMO_SLUG
   const { supabase, ensureSession } = await import('@/lib/supabase')
   await ensureSession()
 
-  // Garde-fou : au-delà de 10 s on coupe la requête et on remonte une erreur
-  // claire plutôt que de laisser l'UI tourner à l'infini.
+  // Garde-fou : on course la RPC contre un timeout de 8 s. Au-delà, on coupe la
+  // requête (abort) et on rejette — jamais d'UI qui tourne à l'infini.
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), SHARE_TIMEOUT_MS)
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort()
+      reject(new Error('Délai dépassé : le lien de partage n’a pas pu être créé.'))
+    }, SHARE_TIMEOUT_MS)
+  })
+
   try {
-    const { data, error } = await supabase
-      .rpc('create_share', { p_run_id: runId })
-      .abortSignal(controller.signal)
-    if (error || !data) {
-      throw new Error(error?.message ?? 'Partage indisponible pour le moment.')
-    }
+    const query = supabase.rpc('create_share', { p_run_id: runId }).abortSignal(controller.signal)
+    const { data, error } = await Promise.race([query, timeout])
+    if (error) throw error
+    // Succès « vide » (null/undefined) : traité comme une erreur explicite.
+    if (!data) throw new Error('Le serveur n’a pas renvoyé de lien de partage.')
     return data
   } catch (err) {
-    if (controller.signal.aborted) {
-      throw new Error('Lien temporairement indisponible', { cause: err })
-    }
-    throw err
+    // Log l'erreur EXACTE pour le debug (jamais affichée brute à l'utilisateur).
+    console.error('[createShare] échec de la RPC create_share:', err)
+    throw err instanceof Error ? err : new Error('Partage indisponible pour le moment.')
   } finally {
-    clearTimeout(timer)
+    if (timer) clearTimeout(timer)
   }
 }
 

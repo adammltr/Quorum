@@ -9,6 +9,7 @@ import {
   nativeShare,
   xIntentUrl,
 } from '@/lib/share'
+import { TIER_COLOR, tierForRank } from '@/components/council/slots'
 import {
   buildDailyShareText,
   dailyUrl,
@@ -33,6 +34,7 @@ interface DailyShareCardProps {
 
 export function DailyShareCard({ result, slots, borda }: DailyShareCardProps): ReactNode {
   const [copied, setCopied] = useState(false)
+  // La grille d'emoji reste dans le TEXTE partagé (rendu fiable sur X/réseaux).
   const grid = buildEmojiGrid(slots, borda)
   const text = buildDailyShareText({
     day: result.day,
@@ -40,6 +42,18 @@ export function DailyShareCard({ result, slots, borda }: DailyShareCardProps): R
     consensusScore: result.yourScore,
   })
   const url = dailyUrl(result.day)
+
+  // Pour l'affichage à l'écran, on rend des points colorés CSS (tokens du design
+  // system) plutôt que des emojis : zéro « ◇? » selon la plateforme/police.
+  const ranked = borda
+    ? Object.entries(borda)
+        .sort((a, b) => b[1] - a[1])
+        .map(([s]) => s)
+    : []
+  const dots = slots.map((slot) => {
+    const rank = ranked.indexOf(slot)
+    return rank !== -1 ? TIER_COLOR[tierForRank(rank, ranked.length)] : 'var(--text-subtle)'
+  })
 
   const handleCopy = async (): Promise<void> => {
     const ok = await copyToClipboard(text)
@@ -68,14 +82,16 @@ export function DailyShareCard({ result, slots, borda }: DailyShareCardProps): R
             Quorum du {formatDayShort(result.day)}
           </span>
           <div
-            className="flex items-center gap-1.5 text-3xl"
+            className="flex items-center gap-2.5"
             role="img"
-            aria-label={`Grille de consensus : ${grid}`}
+            aria-label={`Accord des modèles, du plus fort au plus divergent (${dots.length} délégués)`}
           >
-            {grid.split('').map((emoji, i) => (
-              <span key={i} className="leading-none">
-                {emoji}
-              </span>
+            {dots.map((color, i) => (
+              <span
+                key={i}
+                className="size-3.5 rounded-full"
+                style={{ background: color, boxShadow: `0 0 0 1px ${color} inset` }}
+              />
             ))}
           </div>
           {result.yourScore !== null && (
@@ -83,6 +99,11 @@ export function DailyShareCard({ result, slots, borda }: DailyShareCardProps): R
               <span className="text-2xl text-text">{result.yourScore}</span>% de consensus
             </span>
           )}
+          {/* Spoiler-free : les points encodent l'accord, jamais le verdict. */}
+          <p className="text-xs text-text-subtle italic">
+            Chaque point représente l’accord d’un modèle — le verdict reste masqué pour ne pas
+            spoiler les autres.
+          </p>
         </div>
       </div>
 

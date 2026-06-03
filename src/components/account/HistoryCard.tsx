@@ -119,14 +119,18 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
               Épingler
             </Button>
           )}
-          <ShareDialog
-            runId={item.id}
-            question={item.question}
-            consensusScore={score}
-            slots={slots}
-            borda={borda}
-            variant="inline"
-          />
+          {/* Partage possible uniquement si la délibération a un verdict (sinon
+              rien d'utile à partager — et la RPC create_share échouerait). */}
+          {item.verdict !== null && (
+            <ShareDialog
+              runId={item.id}
+              question={item.question}
+              consensusScore={score}
+              slots={slots}
+              borda={borda}
+              variant="inline"
+            />
+          )}
           {confirming ? (
             <span className="flex items-center gap-1">
               <Button variant="destructive" size="sm" disabled={removing} onClick={() => void handleRemove()}>
