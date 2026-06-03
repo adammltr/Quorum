@@ -14,7 +14,7 @@ import { appUrl } from '@/lib/share'
 import { track } from '@/lib/analytics'
 import { REVERSE_TRIAL } from '@/config/billing'
 import { maybeStartReverseTrial } from '@/lib/billing'
-import { AuthContext, type AuthContextValue, type MagicLinkResult } from './auth-context'
+import { AuthContext, type AuthContextValue, type MagicLinkResult, type OtpResult } from './auth-context'
 
 type Client = SupabaseClient<Database>
 
@@ -141,6 +141,46 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     [configured, user, getClient],
   )
 
+  const verifyOtp = useCallback(
+    async (email: string, token: string): Promise<OtpResult> => {
+      if (!configured) {
+        return { ok: false, message: 'Authentification indisponible en mode démo.' }
+      }
+      const client = await getClient()
+      const trimmedEmail = email.trim()
+      const trimmedToken = token.trim()
+
+      // `email` couvre la connexion / création de compte. En rattachement d'une
+      // session anonyme (updateUser), le jeton est de type `email_change` :
+      // on bascule dessus en repli si le premier essai échoue.
+      let { error } = await client.auth.verifyOtp({
+        email: trimmedEmail,
+        token: trimmedToken,
+        type: 'email',
+      })
+      if (error) {
+        const alt = await client.auth.verifyOtp({
+          email: trimmedEmail,
+          token: trimmedToken,
+          type: 'email_change',
+        })
+        error = alt.error
+      }
+      if (error) return { ok: false, message: error.message }
+
+      // La session est établie : l'écouteur onAuthStateChange mettra à jour
+      // user + profil. On force tout de même un rafraîchissement immédiat.
+      const {
+        data: { user: u },
+      } = await client.auth.getUser()
+      setUser(u)
+      if (u) await loadProfile(client, u.id)
+      track('signup_complete', { method: 'otp' })
+      return { ok: true }
+    },
+    [configured, getClient, loadProfile],
+  )
+
   const signInWithGoogle = useCallback(async () => {
     if (!configured) return
     const client = await getClient()
@@ -186,11 +226,12 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       isPro: isProProfile(profile),
       profile,
       sendMagicLink,
+      verifyOtp,
       signInWithGoogle,
       signOut,
       refresh,
     }
-  }, [ready, configured, user, profile, sendMagicLink, signInWithGoogle, signOut, refresh])
+  }, [ready, configured, user, profile, sendMagicLink, verifyOtp, signInWithGoogle, signOut, refresh])
 
   return <AuthContext value={value}>{children}</AuthContext>
 }

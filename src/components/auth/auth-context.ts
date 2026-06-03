@@ -9,6 +9,12 @@ export interface MagicLinkResult {
   message?: string
 }
 
+/** Issue de la vérification d'un code OTP. */
+export interface OtpResult {
+  ok: boolean
+  message?: string
+}
+
 export interface AuthContextValue {
   /** true dès que la session initiale est résolue (évite les flashs). */
   ready: boolean
@@ -22,8 +28,10 @@ export interface AuthContextValue {
   isAuthenticated: boolean
   isPro: boolean
   profile: Profile | null
-  /** Envoie un lien magique (rattache la session anonyme si possible). */
+  /** Envoie un code OTP à 6 chiffres (rattache la session anonyme si possible). */
   sendMagicLink: (email: string) => Promise<MagicLinkResult>
+  /** Vérifie le code OTP à 6 chiffres reçu par email. */
+  verifyOtp: (email: string, token: string) => Promise<OtpResult>
   /** Connexion/rattachement via Google (redirige). */
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
