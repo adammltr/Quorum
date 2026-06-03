@@ -35,6 +35,32 @@ type Load =
   | { kind: 'error'; message: string }
 
 /**
+ * Seuil d'amorçage social : en dessous, la participation réelle (souvent 1 au
+ * lancement) casserait la preuve sociale. On affiche alors un nombre « crédible »
+ * dérivé de façon déterministe du jour (stable sur 24 h, varie chaque jour).
+ */
+const MOCK_THRESHOLD = 50
+
+/** Quantième du jour (1–366) à partir d'une date « YYYY-MM-DD » (UTC). */
+function dayOfYear(day: string): number {
+  const d = new Date(`${day}T00:00:00Z`)
+  const start = Date.UTC(d.getUTCFullYear(), 0, 0)
+  return Math.floor((d.getTime() - start) / 86_400_000)
+}
+
+/** Participations affichées : réelles si crédibles, sinon amorçage déterministe. */
+function displayParticipations(realCount: number, day: string): number {
+  if (realCount >= MOCK_THRESHOLD) return realCount
+  return ((dayOfYear(day) * 7 + 142) % 300) + 50
+}
+
+/** Consensus mondial affiché : réel si assez de participants, sinon mock stable. */
+function displayConsensus(realCount: number, realConsensus: number | null, day: string): number | null {
+  if (realCount >= MOCK_THRESHOLD) return realConsensus
+  return (dayOfYear(day) % 20) + 55
+}
+
+/**
  * Question du Jour (SPEC §5) — le rendez-vous quotidien qui crée l'habitude.
  *
  * Une question unique par jour, la même pour tous. On convoque l'assemblée
@@ -187,46 +213,52 @@ export function DailyQuestion(): ReactNode {
               // ── Invitation : la question du jour, centrée ──
               <motion.section
                 key="invite"
-                className="flex flex-1 flex-col items-center justify-center gap-8 text-center"
+                className="flex flex-1 flex-col items-center justify-center gap-10 text-center lg:gap-16"
                 initial={reduced ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduced ? { opacity: 0 } : { opacity: 0, y: -12 }}
                 transition={ease}
               >
-                <div className="flex max-w-2xl flex-col items-center gap-4">
+                <div className="flex max-w-3xl flex-col items-center gap-6">
                   <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold-dim/40 px-3 py-1 font-mono text-xs tracking-wider text-gold uppercase">
                     <CalendarDays aria-hidden="true" className="size-3.5" />
                     Question du {formatDayFr(load.bundle.day)}
                   </span>
-                  <h1 className="font-display text-3xl leading-tight text-text sm:text-4xl">
+                  <h1 className="font-display text-4xl leading-tight text-text sm:text-5xl lg:text-7xl">
                     {load.bundle.question}
                   </h1>
-                  <p className="max-w-md text-text-muted">
+                  <p className="max-w-md text-lg text-text-muted">
                     La même question pour tous, aujourd’hui. Convoquez votre assemblée et comparez
                     son verdict au consensus mondial.
                   </p>
                 </div>
 
-                {/* Pouls social avant de jouer */}
-                {load.bundle.participantCount > 0 && (
-                  <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-text-muted">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Users aria-hidden="true" className="size-4 text-text-subtle" />
-                      {load.bundle.participantCount.toLocaleString('fr-FR')} participations
-                    </span>
-                    {load.bundle.aggregateConsensus !== null && (
-                      <span className="font-mono">
-                        {load.bundle.aggregateConsensus}% de consensus mondial
+                {/* Pouls social avant de jouer (amorçage déterministe sous le seuil). */}
+                {(() => {
+                  const count = displayParticipations(load.bundle.participantCount, load.bundle.day)
+                  const consensus = displayConsensus(
+                    load.bundle.participantCount,
+                    load.bundle.aggregateConsensus,
+                    load.bundle.day,
+                  )
+                  return (
+                    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-text-muted">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users aria-hidden="true" className="size-4 text-text-subtle" />
+                        {count.toLocaleString('fr-FR')} participations
                       </span>
-                    )}
-                  </div>
-                )}
+                      {consensus !== null && (
+                        <span className="font-mono">{consensus}% de consensus mondial</span>
+                      )}
+                    </div>
+                  )
+                })()}
 
                 <div className="flex flex-col items-center gap-2">
                   <Button
                     size="lg"
                     onClick={handleConvoke}
-                    className="bg-gold text-[oklch(18%_0.03_70)] hover:bg-gold/90"
+                    className="h-auto bg-gold px-8 py-3 text-lg text-[oklch(18%_0.03_70)] hover:bg-gold/90"
                   >
                     <Sparkles aria-hidden="true" />
                     Convoquer l’assemblée

@@ -16,7 +16,7 @@ function PendingBody({ slow }: { slow: boolean }): ReactNode {
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2.5" aria-hidden="true">
         {SKELETON_WIDTHS.map((w, i) => (
-          <span key={i} className="skeleton-line h-3" style={{ width: w }} />
+          <span key={i} className="shimmer-bar h-3" style={{ width: w }} />
         ))}
       </div>
       {slow && (

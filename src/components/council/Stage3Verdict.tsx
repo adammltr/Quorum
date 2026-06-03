@@ -73,7 +73,15 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
                 className="grid size-[168px] place-items-center rounded-full border border-border"
                 aria-hidden="true"
               >
-                <span className="font-mono text-xs text-text-subtle">calcul…</span>
+                <span className="inline-flex items-center gap-1.5">
+                  {[0, 160, 320].map((delay) => (
+                    <span
+                      key={delay}
+                      className="thinking-dot"
+                      style={{ background: 'var(--gold)', animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </span>
               </div>
             )}
           </div>
@@ -81,8 +89,17 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
           {/* Corps du verdict — Instrument Serif, le grand moment */}
           <div className="flex flex-col gap-6">
             {verdict.body.length === 0 ? (
-              <p className="font-display text-2xl text-text-subtle italic">
-                Le Chairman délibère…
+              <p className="chairman-pulse inline-flex items-center gap-3 font-display text-2xl text-text-subtle italic">
+                Le Chairman délibère
+                <span aria-hidden="true" className="inline-flex items-center gap-1.5 not-italic">
+                  {[0, 160, 320].map((delay) => (
+                    <span
+                      key={delay}
+                      className="thinking-dot"
+                      style={{ background: 'var(--gold)', animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </span>
               </p>
             ) : (
               <p className="font-display text-2xl leading-snug whitespace-pre-wrap text-text sm:text-[2rem] sm:leading-[1.3]">

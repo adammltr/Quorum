@@ -83,7 +83,7 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in" />
         <Dialog.Content
-          className="fixed top-1/2 left-1/2 z-50 flex w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 rounded-2xl border border-gold/30 bg-surface-raised p-6 shadow-2xl focus:outline-none"
+          className="fixed top-1/2 left-1/2 z-50 flex w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-6 rounded-2xl border border-gold/30 bg-surface-raised p-8 shadow-2xl focus:outline-none"
           aria-describedby={undefined}
         >
           <div className="flex items-start justify-between gap-4">
@@ -104,9 +104,9 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
             </Dialog.Close>
           </div>
 
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-2.5">
             {PRO_BENEFITS.map((benefit) => (
-              <li key={benefit} className="flex items-start gap-2.5 text-sm text-text">
+              <li key={benefit} className="flex items-start gap-2.5 text-base text-text">
                 <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-gold" />
                 {benefit}
               </li>
@@ -133,7 +133,7 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
               type="button"
               disabled={cta.kind === 'loading'}
               onClick={() => void handleUpgrade('monthly')}
-              className="text-center text-xs text-text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:opacity-50"
+              className="text-center text-sm text-text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:opacity-50"
             >
               ou {monthlyLabel()}, sans engagement
             </button>
