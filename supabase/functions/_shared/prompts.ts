@@ -115,7 +115,14 @@ export function buildStage3Chairman(
         "Your verdict must take a clear position. Never write 'it depends' as a " +
         "final answer without specifying exactly what it depends on.\n" +
         "Structure your response with these exact headers in the response language: " +
-        "[Points de convergence / Désaccord principal / Verdict du Chairman]",
+        "[Points de convergence / Désaccord principal / Verdict du Chairman]\n\n" +
+        "Always respond in the same language as the user's question. " +
+        "Use these exact French labels if responding in French:\n" +
+        "- 'Points de convergence :' (not 'CONSENSUS_SCORE:')\n" +
+        "- 'Désaccord principal :' (not 'DISAGREEMENTS:')\n" +
+        "- 'Verdict du Chairman :' (not 'VERDICT:')\n" +
+        "Never use uppercase labels or underscores. Format your response in " +
+        "natural prose with **bold** for section headers.",
     },
     {
       role: 'user',

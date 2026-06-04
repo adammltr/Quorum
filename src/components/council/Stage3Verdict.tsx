@@ -1,5 +1,6 @@
-import { type ReactNode } from 'react'
+import { type ComponentPropsWithoutRef, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
+import ReactMarkdown, { type Components } from 'react-markdown'
 import { ConsensusRing } from './ConsensusRing'
 import { cn } from '@/lib/utils'
 import { easeMedium } from '@/lib/motion'
@@ -15,6 +16,33 @@ function tierWord(score: number): string {
   if (score >= 67) return 'Accord large'
   if (score >= 40) return 'Accord nuancé'
   return 'Forte divergence'
+}
+
+/**
+ * Whitelist de rendu markdown pour le verdict. Le Chairman écrit du texte
+ * structuré (**en-têtes**, listes) mais JAMAIS de titres de section (h1/h2/h3) :
+ * seuls strong/em/p/ul/ol/li/hr sont autorisés, le reste est déballé en texte.
+ */
+const VERDICT_ALLOWED = ['strong', 'em', 'p', 'ul', 'ol', 'li', 'hr'] as const
+
+const verdictComponents: Components = {
+  p: ({ children }: ComponentPropsWithoutRef<'p'>) => (
+    <p className="mb-4 last:mb-0">{children}</p>
+  ),
+  strong: ({ children }: ComponentPropsWithoutRef<'strong'>) => (
+    <strong className="font-medium text-gold">{children}</strong>
+  ),
+  em: ({ children }: ComponentPropsWithoutRef<'em'>) => (
+    <em className="italic">{children}</em>
+  ),
+  ul: ({ children }: ComponentPropsWithoutRef<'ul'>) => (
+    <ul className="mb-4 flex list-disc flex-col gap-1.5 pl-6 last:mb-0">{children}</ul>
+  ),
+  ol: ({ children }: ComponentPropsWithoutRef<'ol'>) => (
+    <ol className="mb-4 flex list-decimal flex-col gap-1.5 pl-6 last:mb-0">{children}</ol>
+  ),
+  li: ({ children }: ComponentPropsWithoutRef<'li'>) => <li>{children}</li>,
+  hr: () => <hr className="my-6 border-border/60" />,
 }
 
 interface Stage3VerdictProps {
@@ -102,10 +130,16 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
                 </span>
               </p>
             ) : (
-              <p className="font-display text-2xl leading-snug whitespace-pre-wrap text-text sm:text-[2rem] sm:leading-[1.3]">
-                {verdict.body}
+              <div className="font-display text-2xl leading-snug text-text sm:text-[2rem] sm:leading-[1.3]">
+                <ReactMarkdown
+                  allowedElements={[...VERDICT_ALLOWED]}
+                  unwrapDisallowed
+                  components={verdictComponents}
+                >
+                  {verdict.body}
+                </ReactMarkdown>
                 {streaming && <span aria-hidden="true" className="stream-caret" />}
-              </p>
+              </div>
             )}
 
             {/* Désaccords assumés — information précieuse, élégamment exposée */}
