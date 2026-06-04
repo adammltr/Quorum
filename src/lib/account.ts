@@ -55,6 +55,8 @@ export interface HistoryItem {
   council_snapshot: CouncilSnapshot
   question: string
   verdict: VerdictPreview | null
+  /** Épinglé par l'utilisateur (sidebar). */
+  is_pinned: boolean
 }
 
 export interface CollectionSummary {
@@ -102,6 +104,7 @@ interface RawHistoryRow {
   expires_at: string | null
   council_id: string | null
   council_snapshot: CouncilSnapshot
+  is_pinned: boolean | null
   question: { body: string } | { body: string }[] | null
   verdict:
     | {
@@ -135,6 +138,7 @@ function mapHistory(row: RawHistoryRow): HistoryItem {
     council_id: row.council_id,
     council_snapshot: row.council_snapshot,
     question: q?.body ?? '',
+    is_pinned: row.is_pinned ?? false,
     verdict: v
       ? {
           consensus_score: v.consensus_score,
@@ -150,7 +154,7 @@ function mapHistory(row: RawHistoryRow): HistoryItem {
 }
 
 const HISTORY_SELECT =
-  'id, created_at, status, expires_at, council_id, council_snapshot, ' +
+  'id, created_at, status, expires_at, council_id, council_snapshot, is_pinned, ' +
   'question:questions!inner(body), ' +
   'verdict:verdicts(consensus_score, body, disagreements, borda_scores)'
 
@@ -176,6 +180,27 @@ export async function listHistory(limit = 200): Promise<HistoryItem[]> {
 export async function deleteRun(runId: string): Promise<void> {
   const supabase = await db()
   const { error } = await supabase.from('runs').delete().eq('id', runId)
+  if (error) throw new Error(error.message)
+}
+
+/** Runs épinglés de l'utilisateur, du plus récent au plus ancien (sidebar). */
+export async function listPinnedRuns(limit = 5): Promise<HistoryItem[]> {
+  const supabase = await db()
+  const { data, error } = await supabase
+    .from('runs')
+    .select(HISTORY_SELECT)
+    .eq('is_pinned', true)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+    .returns<RawHistoryRow[]>()
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(mapHistory)
+}
+
+/** Épingle / désépingle un run (RLS owner-only via runs_update_own). */
+export async function setRunPinned(runId: string, pinned: boolean): Promise<void> {
+  const supabase = await db()
+  const { error } = await supabase.from('runs').update({ is_pinned: pinned }).eq('id', runId)
   if (error) throw new Error(error.message)
 }
 

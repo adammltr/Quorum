@@ -8,6 +8,7 @@ import { CouncilAssembly } from '@/components/council/CouncilAssembly'
 import { Stage2Review } from '@/components/council/Stage2Review'
 import { Stage3Verdict } from '@/components/council/Stage3Verdict'
 import { ShareDialog } from '@/components/council/ShareDialog'
+import { SidebarToggle } from '@/components/layout/SidebarToggle'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import type { ModelState, ReviewState, SlotPhase, VerdictState } from '@/hooks/useCouncil'
 import { fetchSharedRun, type PublicRunBundle } from '@/lib/public-run'
@@ -121,13 +122,7 @@ export function PublicResult(): ReactNode {
       </div>
 
       <header className="flex items-center justify-between px-6 py-5 lg:px-10">
-        <Link
-          to="/"
-          className="font-display text-2xl text-text transition-opacity hover:opacity-80"
-          aria-label="Quorum — accueil"
-        >
-          Quorum
-        </Link>
+        <SidebarToggle hideWhenOpen />
         <div className="flex items-center gap-3">
           {bundle && (
             <ShareDialog

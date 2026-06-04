@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { DesignSystem } from './pages/DesignSystem'
 import { RouteFallback } from './components/system/RouteFallback'
+import { AppLayout } from './components/layout/AppLayout'
 import { useAuth } from './components/auth/use-auth'
 import { isAdminEmail } from './lib/admin'
 
@@ -38,6 +39,9 @@ const TermsOfService = lazy(() =>
   import('./pages/TermsOfService').then((m) => ({ default: m.TermsOfService })),
 )
 
+// Paramètres — placeholder (réglages câblés ultérieurement).
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
+
 // 404 — page introuvable (catch-all), chargée à la demande.
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })))
 
@@ -57,37 +61,41 @@ export function App(): ReactNode {
   return (
     // Un seul Suspense englobe toutes les routes lazy : un fallback soigné
     // (jamais d'écran blanc) le temps que le chunk de la page arrive.
-    <Suspense fallback={<RouteFallback />}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        {/* Page publique d'un résultat partagé (SSR meta via api/share.ts) */}
-        <Route path="/q/:slug" element={<PublicResult />} />
-        {/* Rituel quotidien — Question du Jour */}
-        <Route path="/jour" element={<DailyQuestion />} />
-        <Route path="/jour/archive" element={<DailyArchive />} />
-        <Route path="/jour/:day" element={<DailyQuestion />} />
-        {/* Espaces compte & rétention */}
-        <Route path="/history" element={<History />} />
-        <Route path="/collections" element={<Collections />} />
-        <Route path="/collections/:id" element={<Collections />} />
-        <Route path="/councils" element={<Councils />} />
-        {/* Page de résultat complète d'un run détenu (depuis l'historique) */}
-        <Route path="/run/:runId" element={<RunResult />} />
-        {/* Pages légales */}
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        {/* Page interne non listée — vitrine du design system (admin uniquement) */}
-        <Route
-          path="/_designsystem"
-          element={
-            <AdminRoute>
-              <DesignSystem />
-            </AdminRoute>
-          }
-        />
-        {/* Catch-all — 404 soignée, jamais d'écran vide */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <AppLayout>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* Page publique d'un résultat partagé (SSR meta via api/share.ts) */}
+          <Route path="/q/:slug" element={<PublicResult />} />
+          {/* Rituel quotidien — Question du Jour */}
+          <Route path="/jour" element={<DailyQuestion />} />
+          <Route path="/jour/archive" element={<DailyArchive />} />
+          <Route path="/jour/:day" element={<DailyQuestion />} />
+          {/* Espaces compte & rétention */}
+          <Route path="/history" element={<History />} />
+          <Route path="/collections" element={<Collections />} />
+          <Route path="/collections/:id" element={<Collections />} />
+          <Route path="/councils" element={<Councils />} />
+          {/* Page de résultat complète d'un run détenu (depuis l'historique) */}
+          <Route path="/run/:runId" element={<RunResult />} />
+          {/* Pages légales */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          {/* Paramètres du compte (placeholder) */}
+          <Route path="/settings" element={<Settings />} />
+          {/* Page interne non listée — vitrine du design system (admin uniquement) */}
+          <Route
+            path="/_designsystem"
+            element={
+              <AdminRoute>
+                <DesignSystem />
+              </AdminRoute>
+            }
+          />
+          {/* Catch-all — 404 soignée, jamais d'écran vide */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </AppLayout>
   )
 }

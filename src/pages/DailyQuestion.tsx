@@ -4,7 +4,8 @@ import { Link, useParams } from 'react-router-dom'
 import { Archive, CalendarDays, RotateCcw, Sparkles, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { AccountMenu } from '@/components/account/AccountMenu'
+import { AccountPopover } from '@/components/layout/AccountPopover'
+import { SidebarToggle } from '@/components/layout/SidebarToggle'
 import { FadeIn } from '@/components/primitives'
 import { CouncilAssembly } from '@/components/council/CouncilAssembly'
 import { StageStepper } from '@/components/council/StageStepper'
@@ -158,9 +159,7 @@ export function DailyQuestion(): ReactNode {
       </div>
 
       <header className="flex items-center justify-between px-6 py-5 lg:px-10">
-        <Link to="/" className="font-display text-2xl text-text transition-opacity hover:opacity-80">
-          Quorum
-        </Link>
+        <SidebarToggle hideWhenOpen />
         <div className="flex items-center gap-3">
           <Link
             to="/jour/archive"
@@ -170,7 +169,7 @@ export function DailyQuestion(): ReactNode {
             archive
           </Link>
           <ThemeToggle />
-          <AccountMenu />
+          <AccountPopover variant="avatar" side="bottom" />
         </div>
       </header>
 

@@ -406,6 +406,7 @@ export type Database = {
           error: string | null
           expires_at: string | null
           id: string
+          is_pinned: boolean
           is_public: boolean
           mode: string
           question_id: string
@@ -422,6 +423,7 @@ export type Database = {
           error?: string | null
           expires_at?: string | null
           id?: string
+          is_pinned?: boolean
           is_public?: boolean
           mode?: string
           question_id: string
@@ -438,6 +440,7 @@ export type Database = {
           error?: string | null
           expires_at?: string | null
           id?: string
+          is_pinned?: boolean
           is_public?: boolean
           mode?: string
           question_id?: string

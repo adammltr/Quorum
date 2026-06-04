@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { CalendarDays, RotateCcw, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { AccountMenu } from '@/components/account/AccountMenu'
+import { AccountPopover } from '@/components/layout/AccountPopover'
+import { SidebarToggle } from '@/components/layout/SidebarToggle'
 import { FadeIn } from '@/components/primitives'
 import { getCouncil, councilMode, type CouncilRecord } from '@/lib/account'
 import { QuestionComposer } from './QuestionComposer'
@@ -135,6 +136,21 @@ export function CouncilStage(): ReactNode {
     reset()
   }, [reset])
 
+  // « Nouvelle question » depuis la sidebar : navigue vers / avec un `fresh`
+  // (timestamp) qui force le reset même si l'on est déjà sur l'écran principal.
+  const location = useLocation()
+  const freshState = (location.state as { fresh?: number } | null)?.fresh
+  useEffect(() => {
+    if (!freshState) return
+    let cancelled = false
+    void Promise.resolve().then(() => {
+      if (!cancelled) handleReset()
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [freshState, handleReset])
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden">
       {/* Atmosphère — lueur ambre discrète, non décorative */}
@@ -142,16 +158,9 @@ export function CouncilStage(): ReactNode {
         <div className="absolute -top-1/4 left-1/2 h-[55vh] w-[80vw] max-w-[60rem] -translate-x-1/2 rounded-full bg-gold-dim blur-[140px] lg:h-[65vh] lg:max-w-[80rem] xl:max-w-[96rem]" />
       </div>
 
-      {/* Barre supérieure */}
+      {/* Barre supérieure — la marque et la navigation vivent dans la sidebar */}
       <header className="flex items-center justify-between px-6 py-5 lg:px-10">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="font-display text-2xl text-text transition-opacity hover:opacity-80"
-          aria-label="Quorum — nouvelle question"
-        >
-          Quorum
-        </button>
+        <SidebarToggle hideWhenOpen />
         <div className="flex items-center gap-3">
           {isAdmin && (
             <Link
@@ -162,7 +171,7 @@ export function CouncilStage(): ReactNode {
             </Link>
           )}
           <ThemeToggle />
-          <AccountMenu />
+          <AccountPopover variant="avatar" side="bottom" />
         </div>
       </header>
 
