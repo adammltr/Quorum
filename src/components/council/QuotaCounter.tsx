@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/components/auth/use-auth'
 import { fetchTodayUsage } from '@/lib/account'
 import { FREE_TIER } from '@/config/billing'
@@ -19,6 +20,7 @@ interface QuotaCounterProps {
  * seule via `fetchTodayUsage` — n'incrémente jamais le quota.
  */
 export function QuotaCounter({ refreshKey }: QuotaCounterProps): ReactNode {
+  const { t } = useTranslation()
   const { isAuthenticated, isPro, configured } = useAuth()
   const [count, setCount] = useState<number | null>(null)
 
@@ -47,7 +49,7 @@ export function QuotaCounter({ refreshKey }: QuotaCounterProps): ReactNode {
 
   return (
     <span className="rounded-full border border-border bg-surface/60 px-3 py-1 font-mono text-xs text-text-muted">
-      {remaining} question{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''} aujourd’hui
+      {t('quota.counter', { count: remaining, remaining })}
     </span>
   )
 }

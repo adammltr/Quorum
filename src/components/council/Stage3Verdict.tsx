@@ -1,5 +1,6 @@
 import { type ComponentPropsWithoutRef, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import { ConsensusRing } from './ConsensusRing'
 import { cn } from '@/lib/utils'
@@ -12,10 +13,10 @@ import type { RunPhase, VerdictState } from '@/hooks/useCouncil'
  * désaccords sont exposés comme une matière précieuse, pas comme un défaut.
  */
 
-function tierWord(score: number): string {
-  if (score >= 67) return 'Accord large'
-  if (score >= 40) return 'Accord nuancé'
-  return 'Forte divergence'
+function tierWordKey(score: number): string {
+  if (score >= 67) return 'stage3.tierBroad'
+  if (score >= 40) return 'stage3.tierNuanced'
+  return 'stage3.tierStrongDivergence'
 }
 
 /**
@@ -51,6 +52,7 @@ interface Stage3VerdictProps {
 }
 
 export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode {
+  const { t } = useTranslation()
   const reduced = useReducedMotion()
   const streaming = phase === 'running'
   const hasScore = verdict.consensusScore !== null
@@ -76,10 +78,10 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
       <div className="relative flex flex-col gap-8">
         <header className="flex flex-col gap-1">
           <span className="font-mono text-xs tracking-wider text-gold uppercase">
-            03 — Verdict du Chairman
+            {t('stage3.eyebrow')}
           </span>
           <h2 className="font-display text-2xl leading-snug text-text sm:text-3xl">
-            La synthèse de l’assemblée
+            {t('stage3.title')}
           </h2>
         </header>
 
@@ -91,9 +93,9 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
                 <ConsensusRing score={score} />
                 <div className="flex flex-col items-center gap-0.5 lg:items-start">
                   <span className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                    Score de consensus
+                    {t('stage3.consensusScore')}
                   </span>
-                  <span className="font-mono text-sm text-text">{tierWord(score)}</span>
+                  <span className="font-mono text-sm text-text">{t(tierWordKey(score))}</span>
                 </div>
               </>
             ) : (
@@ -118,7 +120,7 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
           <div className="flex flex-col gap-6">
             {verdict.body.length === 0 ? (
               <p className="chairman-pulse inline-flex items-center gap-3 font-display text-2xl text-text-subtle italic">
-                Le Chairman délibère
+                {t('stage3.deliberating')}
                 <span aria-hidden="true" className="inline-flex items-center gap-1.5 not-italic">
                   {[0, 160, 320].map((delay) => (
                     <span
@@ -151,7 +153,7 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
                 transition={reduced ? { duration: 0 } : { ...easeMedium, delay: 0.15 }}
               >
                 <span className="font-mono text-xs tracking-wider text-text-muted uppercase">
-                  Désaccords assumés — là où l’assemblée diverge
+                  {t('stage3.disagreements')}
                 </span>
                 <ul className="flex flex-col gap-2.5">
                   {verdict.disagreements.map((d, i) => (
@@ -171,8 +173,7 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
 
         {/* Disclaimer factuel — Quorum synthétise des perspectives, ne valide pas des faits. */}
         <p className="mt-6 border-t border-border/60 pt-4 text-xs text-text-subtle italic">
-          ⚠ Le consensus Quorum ne valide pas des faits — il synthétise des perspectives. Jamais de
-          décision médicale, légale ou financière basée sur ce verdict.
+          {t('stage3.disclaimer')}
         </p>
       </div>
     </motion.section>

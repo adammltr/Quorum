@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { easeMedium } from '@/lib/motion'
@@ -12,9 +13,9 @@ import type { RunPhase } from '@/hooks/useCouncil'
  */
 
 const STEPS = [
-  { n: 1, label: 'Réponses' },
-  { n: 2, label: 'Évaluation' },
-  { n: 3, label: 'Verdict' },
+  { n: 1, labelKey: 'council.stepAnswers' },
+  { n: 2, labelKey: 'council.stepEvaluation' },
+  { n: 3, labelKey: 'council.stepVerdict' },
 ] as const
 
 interface StageStepperProps {
@@ -23,6 +24,7 @@ interface StageStepperProps {
 }
 
 export function StageStepper({ stage, phase }: StageStepperProps): ReactNode {
+  const { t } = useTranslation()
   const reduced = useReducedMotion()
   const done = phase === 'done'
   // Progression 0 → 1 : stage 1 = 0, stage 2 = 0.5, stage 3/terminé = 1.
@@ -57,7 +59,7 @@ export function StageStepper({ stage, phase }: StageStepperProps): ReactNode {
                   active ? (isVerdict ? 'text-gold' : 'text-text') : 'text-text-subtle',
                 )}
               >
-                {step.label}
+                {t(step.labelKey)}
               </span>
             </div>
 

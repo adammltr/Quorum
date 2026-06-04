@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Dialog } from 'radix-ui'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, KeyRound, Loader2, Mail, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,6 +55,7 @@ function OtpInput({
   disabled?: boolean
   invalid?: boolean
 }): ReactNode {
+  const { t } = useTranslation()
   const refs = useRef<(HTMLInputElement | null)[]>([])
   const digits = Array.from({ length: OTP_LENGTH }, (_, i) => value[i] ?? '')
 
@@ -109,7 +111,7 @@ function OtpInput({
   return (
     <div
       role="group"
-      aria-label={`Code à ${OTP_LENGTH} chiffres`}
+      aria-label={t('auth.otpGroupLabel', { n: OTP_LENGTH })}
       className="flex justify-center gap-3"
     >
       {digits.map((d, i) => (
@@ -125,7 +127,7 @@ function OtpInput({
           maxLength={1}
           value={d}
           disabled={disabled}
-          aria-label={`Chiffre ${i + 1}`}
+          aria-label={t('auth.digitLabel', { n: i + 1 })}
           aria-invalid={invalid}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
@@ -148,6 +150,7 @@ function OtpInput({
  * session n'est jamais perdu. Aucun mot de passe.
  */
 export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): ReactNode {
+  const { t } = useTranslation()
   const { sendMagicLink, verifyOtp, signInWithGoogle, configured } = useAuth()
   const [email, setEmail] = useState('')
   const [view, setView] = useState<View>({ step: 'email' })
@@ -179,7 +182,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
       setCode('')
       setView({ step: 'otp', email: value, mode: res.mode })
     } else {
-      setError(res.message ?? 'Envoi impossible. Réessaie.')
+      setError(res.message ?? t('auth.sendFailed'))
     }
   }
 
@@ -193,7 +196,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
     if (res.ok) {
       handleOpenChange(false)
     } else {
-      setError('Code incorrect ou expiré.')
+      setError(t('auth.codeInvalid'))
       setCode('')
     }
   }
@@ -205,7 +208,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
     const res = await sendMagicLink(view.email)
     setBusy(false)
     setCode('')
-    if (!res.ok) setError(res.message ?? 'Renvoi impossible. Réessaie.')
+    if (!res.ok) setError(res.message ?? t('auth.resendFailed'))
   }
 
   const backToEmail = () => {
@@ -232,22 +235,22 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
-                {isOtp ? 'Entre le code reçu par email' : 'Garder cette assemblée'}
+                {isOtp ? t('auth.otpTitle') : t('auth.title')}
               </Dialog.Title>
               <p className={cn('text-text-muted', isOtp ? 'text-base' : 'text-sm')}>
                 {isOtp ? (
                   <>
-                    Code envoyé à
+                    {t('auth.codeSentTo')}
                     <br />
                     <span className="font-semibold text-text">{view.email}</span>
                   </>
                 ) : (
-                  reason ?? 'Crée ton compte pour retrouver tes délibérations, partout.'
+                  reason ?? t('auth.reasonDefault')
                 )}
               </p>
             </div>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Fermer">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.close')}>
                 <X aria-hidden="true" />
               </Button>
             </Dialog.Close>
@@ -272,7 +275,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                     onClick={() => void handleResend()}
                     className="font-medium text-gold underline-offset-2 hover:underline"
                   >
-                    Renvoyer&nbsp;?
+                    {t('auth.resendQ')}
                   </button>
                 </p>
               )}
@@ -287,12 +290,12 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                 {busy ? (
                   <>
                     <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                    Vérification…
+                    {t('auth.verifying')}
                   </>
                 ) : (
                   <>
                     <KeyRound aria-hidden="true" />
-                    Valider
+                    {t('auth.validate')}
                   </>
                 )}
               </Button>
@@ -305,7 +308,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                   className="inline-flex items-center gap-1 underline-offset-2 transition-colors hover:text-text-muted disabled:opacity-50"
                 >
                   <ArrowLeft aria-hidden="true" className="size-3.5" />
-                  Changer d’email
+                  {t('auth.changeEmail')}
                 </button>
                 <button
                   type="button"
@@ -313,7 +316,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                   disabled={busy}
                   className="underline-offset-2 transition-colors hover:text-text-muted disabled:opacity-50"
                 >
-                  Renvoyer le code
+                  {t('auth.resendCode')}
                 </button>
               </div>
             </div>
@@ -328,25 +331,25 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                 onClick={() => void signInWithGoogle()}
               >
                 <GoogleMark />
-                Continuer avec Google
+                {t('auth.continueGoogle')}
               </Button>
 
               <div className="flex items-center gap-3" aria-hidden="true">
                 <span className="h-px flex-1 bg-border" />
-                <span className="font-mono text-xs text-text-subtle">ou</span>
+                <span className="font-mono text-xs text-text-subtle">{t('auth.or')}</span>
                 <span className="h-px flex-1 bg-border" />
               </div>
 
               <form onSubmit={handleEmail} className="flex flex-col gap-2.5">
                 <label htmlFor="auth-email" className="sr-only">
-                  Adresse email
+                  {t('auth.emailLabel')}
                 </label>
                 <Input
                   id="auth-email"
                   type="email"
                   required
                   autoComplete="email"
-                  placeholder="toi@exemple.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   value={email}
                   disabled={!configured || busy}
                   onChange={(e) => setEmail(e.target.value)}
@@ -361,12 +364,12 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                   {busy ? (
                     <>
                       <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                      Envoi…
+                      {t('auth.sending')}
                     </>
                   ) : (
                     <>
                       <Mail aria-hidden="true" />
-                      Recevoir le code
+                      {t('auth.getCode')}
                     </>
                   )}
                 </Button>
@@ -374,11 +377,11 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
 
               {!configured && (
                 <p className="text-center text-xs text-text-subtle">
-                  Authentification indisponible : backend Supabase non configuré (mode démo).
+                  {t('auth.demoUnavailable')}
                 </p>
               )}
               <p className="text-center text-xs text-text-subtle">
-                Pas de mot de passe. On t’envoie un code à 6 chiffres.
+                {t('auth.noPassword')}
               </p>
             </>
           )}

@@ -9,6 +9,8 @@
 <!-- DEMO GIF -->
 ![demo](docs/demo.gif)
 
+<sub>🇫🇷 <a href="docs/demo-fr.gif">Version française</a></sub>
+
 <br/>
 
 [![Stars](https://img.shields.io/github/stars/adammltr/Quorum?style=social)](https://github.com/adammltr/Quorum/stargazers)

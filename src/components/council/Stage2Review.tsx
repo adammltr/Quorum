@@ -1,11 +1,19 @@
 import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
 import { GlassCard } from '@/components/primitives'
 import { cn } from '@/lib/utils'
 import { easeMedium, spring } from '@/lib/motion'
-import { slotAccent, TIER_COLOR, TIER_DIM, TIER_LABEL, tierForRank } from './slots'
+import { slotAccent, TIER_COLOR, TIER_DIM, tierForRank, type Tier } from './slots'
 import type { ModelState, ReviewState } from '@/hooks/useCouncil'
+
+/** Clé i18n du palier de vote (le label visuel vient des ressources). */
+const TIER_LABEL_KEY: Record<Tier, string> = {
+  consensus: 'tier.consensus',
+  partial: 'tier.partial',
+  dissent: 'tier.dissent',
+}
 
 /**
  * Stage 2 — peer-review aveugle, rendu lisible.
@@ -23,12 +31,14 @@ interface Stage2ReviewProps {
 }
 
 export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): ReactNode {
+  const { t } = useTranslation()
   const reduced = useReducedMotion()
   const [explain, setExplain] = useState(false)
 
   const successful = models.filter((m) => m.phase === 'complete')
   const voted = new Set(reviews.map((r) => r.reviewerSlot))
-  const labelOf = (slot: string) => models.find((m) => m.slot === slot)?.label ?? `Modèle ${slot}`
+  const labelOf = (slot: string) =>
+    models.find((m) => m.slot === slot)?.label ?? t('stage2.modelFallback', { slot })
 
   const ranking = borda
     ? Object.entries(borda)
@@ -42,7 +52,10 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
   const ordinal = (i: number) => `#${i + 1}`
   // Phrase en langage naturel : « X a classé A #1, B #2, C #3. »
   const ballotSentence = (r: ReviewState): string =>
-    `${labelOf(r.reviewerSlot)} a classé ${r.ranking.map((s, i) => `${labelOf(s)} ${ordinal(i)}`).join(', ')}.`
+    t('stage2.ballotSentence', {
+      reviewer: labelOf(r.reviewerSlot),
+      ranking: r.ranking.map((s, i) => `${labelOf(s)} ${ordinal(i)}`).join(', '),
+    })
   // Total maximal théorique : chaque bulletin attribue 3 pts à son 1er choix.
   const maxBorda = ballots.length * 3
   const top = ranking[0]
@@ -51,10 +64,10 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
     <GlassCard className="flex flex-col gap-6 p-6 sm:p-8">
       <header className="flex flex-col gap-1">
         <span className="font-mono text-xs tracking-wider text-text-muted uppercase">
-          02 — Évaluation croisée
+          {t('stage2.eyebrow')}
         </span>
         <h2 className="font-display text-2xl leading-snug text-text sm:text-3xl">
-          L’assemblée se juge en aveugle
+          {t('stage2.title')}
         </h2>
       </header>
 
@@ -81,7 +94,7 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
           )
         })}
         <span className="ml-1 font-mono text-xs text-text-subtle" aria-live="polite">
-          {voted.size}/{successful.length} ont voté
+          {t('stage2.votedCount', { n: voted.size, total: successful.length })}
         </span>
       </div>
 
@@ -116,7 +129,7 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
                         className="shrink-0 font-mono text-[0.64rem] tracking-wide uppercase"
                         style={{ color: TIER_COLOR[tier] }}
                       >
-                        {TIER_LABEL[tier]}
+                        {t(TIER_LABEL_KEY[tier])}
                       </span>
                     </div>
                     {/* Jauge Borda — la largeur croît, couleur = palier */}
@@ -145,7 +158,7 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            Agrégation des votes (Borda)…
+            {t('stage2.aggregating')}
           </motion.p>
         )}
       </AnimatePresence>
@@ -159,7 +172,7 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
             aria-expanded={explain}
             className="self-start text-xs text-text-subtle underline-offset-4 transition-colors hover:text-text-muted hover:underline"
           >
-            Comment ce score est calculé {explain ? '↑' : '↓'}
+            {t('stage2.howScored')} {explain ? '↑' : '↓'}
           </button>
           <AnimatePresence initial={false}>
             {explain && (
@@ -181,8 +194,11 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
                   </ul>
                   {top && (
                     <p className="border-t border-border/60 pt-2 font-mono text-xs text-text">
-                      Score final Borda : {labelOf(top.slot)} {top.score}/{maxBorda} pts (1
-                      <sup>er</sup> = 3 pts, 2<sup>e</sup> = 2 pts, 3<sup>e</sup> = 1 pt).
+                      {t('stage2.bordaFinal', {
+                        label: labelOf(top.slot),
+                        score: top.score,
+                        max: maxBorda,
+                      })}
                     </p>
                   )}
                 </div>
@@ -194,9 +210,10 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
 
       {ranking.length > 0 && (
         <p className="max-w-2xl text-sm leading-relaxed text-text-muted">
-          Plus une réponse rallie de voix, plus l’accord est fort. La dernière marque le{' '}
-          <span className="text-dissent">point de divergence</span> — non une faute, mais l’endroit
-          précis où les intelligences cessent de s’accorder.
+          <Trans
+            i18nKey="stage2.explainer"
+            components={[<span key="d" className="text-dissent" />]}
+          />
         </p>
       )}
     </GlassCard>

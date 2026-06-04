@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CalendarDays, Clock, FolderOpen, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -9,10 +10,10 @@ import { cn } from '@/lib/utils'
 
 const NAV = [
   // `gated` : nécessite un compte. « Question du jour » reste accessible à tous.
-  { to: '/jour', label: 'Question du jour', icon: CalendarDays, gated: false },
-  { to: '/history', label: 'Historique', icon: Clock, gated: true },
-  { to: '/collections', label: 'Collections', icon: FolderOpen, gated: true },
-  { to: '/councils', label: 'Councils', icon: Users, gated: true },
+  { to: '/jour', labelKey: 'nav.questionOfDay', icon: CalendarDays, gated: false },
+  { to: '/history', labelKey: 'nav.history', icon: Clock, gated: true },
+  { to: '/collections', labelKey: 'nav.collections', icon: FolderOpen, gated: true },
+  { to: '/councils', labelKey: 'nav.councils', icon: Users, gated: true },
 ] as const
 
 interface AppShellProps {
@@ -25,6 +26,7 @@ interface AppShellProps {
 
 /** Coquille commune aux espaces « compte » (historique, collections, councils). */
 export function AppShell({ title, subtitle, action, children }: AppShellProps): ReactNode {
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuth()
   // Onglet verrouillé cliqué : affiche un popover inline éphémère (2 s).
   const [lockedHint, setLockedHint] = useState<string | null>(null)
@@ -55,7 +57,7 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <Link to="/">
               <Plus aria-hidden="true" />
-              Nouvelle question
+              {t('nav.newQuestion')}
             </Link>
           </Button>
           <ThemeToggle />
@@ -67,9 +69,9 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
         <div className="flex flex-col gap-6 pt-2">
           <nav
             className="-mx-4 flex items-center gap-1 overflow-x-auto scroll-smooth scrollbar-none px-4"
-            aria-label="Espaces du compte"
+            aria-label={t('nav.accountSpaces')}
           >
-            {NAV.map(({ to, label, icon: Icon, gated }) => {
+            {NAV.map(({ to, labelKey, icon: Icon, gated }) => {
               const locked = gated && !isAuthenticated
               if (locked) {
                 return (
@@ -81,14 +83,14 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
                       className="inline-flex cursor-not-allowed items-center gap-2 rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap text-text-muted opacity-40 transition-colors"
                     >
                       <Icon aria-hidden="true" className="size-4" />
-                      {label}
+                      {t(labelKey)}
                     </button>
                     {lockedHint === to && (
                       <span
                         role="status"
                         className="absolute top-full left-1/2 z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-surface-raised px-2.5 py-1 text-xs text-text-subtle shadow-md"
                       >
-                        Connecte-toi pour accéder à l’historique
+                        {t('nav.lockedHint')}
                       </span>
                     )}
                   </div>
@@ -108,7 +110,7 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
                   }
                 >
                   <Icon aria-hidden="true" className="size-4" />
-                  {label}
+                  {t(labelKey)}
                 </NavLink>
               )
             })}

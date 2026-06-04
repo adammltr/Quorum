@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CalendarDays, RotateCcw, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -27,21 +28,22 @@ import { QuotaCounter } from './QuotaCounter'
 import { FREE_TIER } from '@/config/billing'
 import { ease } from '@/lib/motion'
 
-/** Libellé de l'étape en cours — discret, en mono. */
-function stageLabel(phase: RunPhase, stage: 1 | 2 | 3): string {
-  if (phase === 'done') return 'Délibération terminée'
-  if (phase === 'error') return 'Délibération interrompue'
+/** Clé i18n du libellé de l'étape en cours — discret, en mono. */
+function stageLabelKey(phase: RunPhase, stage: 1 | 2 | 3): string {
+  if (phase === 'done') return 'council.status.done'
+  if (phase === 'error') return 'council.status.error'
   switch (stage) {
     case 1:
-      return 'Réponses parallèles'
+      return 'council.status.answers'
     case 2:
-      return 'Évaluation croisée'
+      return 'council.status.crossEval'
     case 3:
-      return 'Synthèse du Chairman'
+      return 'council.status.chairmanSynthesis'
   }
 }
 
 export function CouncilStage(): ReactNode {
+  const { t } = useTranslation()
   const reduced = useReducedMotion()
   const { phase, stage, runId, models, reviews, borda, verdict, error, errorCode, quota, submit, reset } =
     useCouncil()
@@ -167,7 +169,7 @@ export function CouncilStage(): ReactNode {
               to="/_designsystem"
               className="hidden font-mono text-xs text-text-subtle underline-offset-4 hover:text-text-muted hover:underline sm:inline"
             >
-              design system
+              {t('nav.designSystem')}
             </Link>
           )}
           <ThemeToggle />
@@ -189,14 +191,14 @@ export function CouncilStage(): ReactNode {
             >
               <div className="flex max-w-2xl flex-col items-center gap-4 lg:max-w-4xl lg:gap-6">
                 <p className="font-mono text-sm tracking-wider text-text-muted uppercase lg:text-base">
-                  Le consensus des intelligences
+                  {t('home.tagline')}
                 </p>
                 <h1 className="font-display text-4xl leading-tight text-text sm:text-5xl lg:text-7xl xl:text-8xl">
-                  Convoquez l’assemblée.
+                  {t('home.title')}
                 </h1>
                 {/* Micro-onboarding : 1 ligne, le reste se comprend en regardant */}
                 <p className="max-w-md text-lg leading-relaxed text-text-muted lg:max-w-xl lg:text-xl">
-                  4 IA répondent, s’évaluent en aveugle, puis tranchent.
+                  {t('home.subtitle')}
                 </p>
               </div>
               <div className="flex w-full max-w-2xl flex-col items-center gap-3 lg:max-w-3xl">
@@ -204,13 +206,13 @@ export function CouncilStage(): ReactNode {
                   <div className="flex items-center gap-2 rounded-full border border-gold/30 bg-gold-dim/40 px-3 py-1.5">
                     <Users aria-hidden="true" className="size-3.5 text-gold" />
                     <span className="text-sm text-text">
-                      Assemblée : <span className="font-medium">{council.name}</span>
+                      {t('council.assemblyBadge')} <span className="font-medium">{council.name}</span>
                     </span>
                     <button
                       type="button"
                       onClick={clearCouncil}
                       className="grid size-4 place-items-center rounded-full text-text-muted hover:text-text"
-                      aria-label="Retirer le council choisi"
+                      aria-label={t('council.removeCouncil')}
                     >
                       <X aria-hidden="true" className="size-3.5" />
                     </button>
@@ -227,7 +229,7 @@ export function CouncilStage(): ReactNode {
                   className="mt-8 inline-flex items-center gap-2 font-display text-lg text-text underline-offset-4 transition-colors hover:text-gold hover:underline"
                 >
                   <CalendarDays aria-hidden="true" className="size-5 text-gold" />
-                  Ou répondez à la Question du Jour
+                  {t('home.orAnswerDaily')}
                 </Link>
               </div>
               <div className="mt-12 lg:mt-16">
@@ -251,12 +253,12 @@ export function CouncilStage(): ReactNode {
                   <StageStepper stage={stage} phase={phase} />
                   {/* Statut textuel pour les lecteurs d'écran */}
                   <span className="sr-only" aria-live="polite">
-                    {stageLabel(phase, stage)}
+                    {t(stageLabelKey(phase, stage))}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleReset} className="shrink-0">
                   <RotateCcw aria-hidden="true" />
-                  Nouvelle question
+                  {t('council.newQuestion')}
                 </Button>
               </div>
 
@@ -268,7 +270,7 @@ export function CouncilStage(): ReactNode {
                   >
                     <p className="text-sm text-text">{error}</p>
                     <Button variant="outline" size="sm" onClick={() => handleSubmit(question)}>
-                      Réessayer
+                      {t('council.errorRetry')}
                     </Button>
                   </div>
                 </FadeIn>
@@ -314,7 +316,7 @@ export function CouncilStage(): ReactNode {
                       borda={borda}
                     />
                     <p className="text-xs text-text-subtle">
-                      Une page publique propre — gratuite et illimitée, même sans compte.
+                      {t('council.sharePublicNote')}
                     </p>
                   </div>
                 </FadeIn>

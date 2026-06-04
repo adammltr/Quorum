@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CalendarClock, KeyRound, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FadeIn } from '@/components/primitives'
@@ -44,6 +45,7 @@ export function QuotaExceeded({
   onByok,
   onReset,
 }: QuotaExceededProps): ReactNode {
+  const { t } = useTranslation()
   const [remainingMs, setRemainingMs] = useState<number>(() => msUntilLocalMidnight())
 
   useEffect(() => {
@@ -63,23 +65,23 @@ export function QuotaExceeded({
 
         <div className="flex flex-col items-center gap-3">
           <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-            Quota quotidien atteint
+            {t('quota.title')}
           </h2>
           <p className="max-w-md text-lg leading-relaxed text-text-muted">
-            Tu as utilisé tes questions gratuites du jour. Le compteur repart à zéro à minuit.
+            {t('quota.body')}
           </p>
         </div>
 
         {/* Compte à rebours jusqu'au reset (minuit local) */}
         <div className="flex flex-col items-center gap-2" role="timer" aria-live="off">
           <span className="font-mono text-xs tracking-wider text-text-subtle uppercase">
-            Remise à zéro dans
+            {t('quota.resetIn')}
           </span>
-          <span className="font-mono text-4xl tabular-nums text-text" aria-label="Temps avant remise à zéro">
+          <span className="font-mono text-4xl tabular-nums text-text" aria-label={t('quota.resetAria')}>
             {formatCountdown(remainingMs)}
           </span>
           <span className="rounded-full bg-surface-raised px-3 py-1 font-mono text-sm text-text-muted">
-            {remaining}/{limit} question{limit > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''} aujourd’hui
+            {t('quota.remaining', { count: remaining, remaining, limit })}
           </span>
         </div>
 
@@ -90,11 +92,11 @@ export function QuotaExceeded({
             className="bg-gold text-[oklch(18%_0.03_70)] hover:bg-gold/90"
           >
             <KeyRound aria-hidden="true" />
-            Passer en BYOK
+            {t('quota.goByok')}
           </Button>
           <Button variant="outline" size="lg" onClick={onReset}>
             <RotateCcw aria-hidden="true" />
-            Revenir demain
+            {t('quota.comeBackTomorrow')}
           </Button>
         </div>
       </div>

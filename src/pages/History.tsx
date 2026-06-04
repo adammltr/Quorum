@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Clock, Search } from 'lucide-react'
 import { AppShell } from '@/components/account/AppShell'
 import { HistoryCard } from '@/components/account/HistoryCard'
@@ -9,17 +10,14 @@ import { useHistory } from '@/hooks/useHistory'
 import { useAuth } from '@/components/auth/use-auth'
 
 export function History(): ReactNode {
+  const { t } = useTranslation()
   const { results, query, setQuery, loading, error, remove, items } = useHistory()
   const { isAuthenticated, isPro } = useAuth()
 
   return (
     <AppShell
-      title="Historique"
-      subtitle={
-        isPro
-          ? 'Toutes tes délibérations, conservées sans limite et recherchables.'
-          : 'Tes délibérations des 7 derniers jours. Passe en PRO pour les garder sans limite.'
-      }
+      title={t('account.historyTitle')}
+      subtitle={isPro ? t('account.historyDescPro') : t('account.historyDescFree')}
     >
       {/* Recherche */}
       <div className="relative max-w-md">
@@ -29,21 +27,18 @@ export function History(): ReactNode {
         />
         <Input
           type="search"
-          placeholder="Rechercher dans tes questions…"
+          placeholder={t('account.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9"
-          aria-label="Rechercher dans l'historique"
+          aria-label={t('account.searchAria')}
         />
       </div>
 
       {/* Bandeau de rétention pour les anonymes */}
       {!isAuthenticated && items.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/20 bg-gold-dim/40 px-5 py-4">
-          <p className="text-sm text-text">
-            Cet historique vit sur cet appareil et s’efface après 7 jours. Crée un compte pour le
-            garder partout.
-          </p>
+          <p className="text-sm text-text">{t('account.anonRetentionNote')}</p>
         </div>
       )}
 
@@ -64,15 +59,15 @@ export function History(): ReactNode {
           <Clock aria-hidden="true" className="size-8 text-text-subtle" />
           <div className="flex flex-col gap-1">
             <p className="font-display text-xl text-text">
-              {query ? 'Aucun résultat' : 'Aucune délibération pour l’instant'}
+              {query ? t('account.historyNoResults') : t('account.historyEmptyTitle')}
             </p>
             <p className="text-sm text-text-muted">
-              {query ? 'Essaie d’autres mots-clés.' : 'Convoque une assemblée pour commencer.'}
+              {query ? t('account.historyNoResultsHint') : t('account.historyEmptyHint')}
             </p>
           </div>
           {!query && (
             <Button asChild>
-              <Link to="/">Poser une question</Link>
+              <Link to="/">{t('account.askQuestion')}</Link>
             </Button>
           )}
         </div>

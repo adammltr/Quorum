@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Bookmark, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GlassCard } from '@/components/primitives'
@@ -25,6 +26,7 @@ interface HistoryCardProps {
 
 /** Carte d'historique : question, aperçu du verdict, score, métadonnées, actions. */
 export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProps): ReactNode {
+  const { t } = useTranslation()
   const { isPro } = useAuth()
   const [pinOpen, setPinOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -56,7 +58,7 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
       <Link
         to={`/run/${item.id}`}
         className="flex items-start gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
-        aria-label={`Ouvrir la délibération : ${item.question}`}
+        aria-label={t('historyCard.openAria', { question: item.question })}
       >
         {/* Score de consensus — pastille compacte */}
         {score !== null ? (
@@ -64,7 +66,7 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
             className="flex size-14 shrink-0 flex-col items-center justify-center rounded-xl border"
             style={{ borderColor: scoreColor(score), background: 'var(--surface)' }}
             role="img"
-            aria-label={`Consensus ${score} sur 100`}
+            aria-label={t('historyCard.consensusAria', { score })}
           >
             <span className="font-mono text-xl leading-none tabular-nums" style={{ color: scoreColor(score) }}>
               {score}
@@ -105,9 +107,9 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
                 'rounded-full px-2 py-0.5 font-mono text-[0.64rem]',
                 expiresIn <= 2 ? 'bg-dissent-dim text-dissent' : 'bg-surface-raised text-text-subtle',
               )}
-              title="Historique gratuit : 7 jours. Passe en PRO pour le conserver."
+              title={t('historyCard.expiresTooltip')}
             >
-              {expiresIn <= 0 ? 'expire bientôt' : `expire dans ${expiresIn} j`}
+              {expiresIn <= 0 ? t('historyCard.expiresSoon') : t('historyCard.expiresIn', { n: expiresIn })}
             </span>
           )}
         </div>
@@ -116,7 +118,7 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
           {!hidePin && (
             <Button variant="ghost" size="sm" onClick={() => setPinOpen(true)}>
               <Bookmark aria-hidden="true" />
-              Épingler
+              {t('historyCard.pin')}
             </Button>
           )}
           {/* Partage possible uniquement si la délibération a un verdict (sinon
@@ -134,17 +136,17 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
           {confirming ? (
             <span className="flex items-center gap-1">
               <Button variant="destructive" size="sm" disabled={removing} onClick={() => void handleRemove()}>
-                Confirmer
+                {t('common.confirm')}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setConfirming(false)}>
-                Annuler
+                {t('common.cancel')}
               </Button>
             </span>
           ) : (
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Supprimer cette délibération"
+              aria-label={t('historyCard.deleteAria')}
               onClick={() => setConfirming(true)}
             >
               <Trash2 aria-hidden="true" />

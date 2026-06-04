@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import { DropdownMenu } from 'radix-ui'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Clock, FolderOpen, LogOut, Sparkles, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/use-auth'
 import { usePaywall } from '@/components/billing/use-paywall'
 import { AuthDialog } from '@/components/auth/AuthDialog'
+import { LanguageToggle } from '@/components/i18n/LanguageToggle'
 
 const itemClass =
   'flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-text outline-none select-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground'
@@ -21,6 +23,7 @@ function initial(name: string | null, email: string | null): string {
  * connecter. Inscrit → menu vers l'historique, les collections, les councils.
  */
 export function AccountMenu(): ReactNode {
+  const { t } = useTranslation()
   const { ready, isAuthenticated, isPro, email, profile, signOut } = useAuth()
   const { openPaywall } = usePaywall()
   const [authOpen, setAuthOpen] = useState(false)
@@ -33,7 +36,7 @@ export function AccountMenu(): ReactNode {
     return (
       <>
         <Button variant="outline" size="sm" onClick={() => setAuthOpen(true)}>
-          Se connecter
+          {t('nav.signIn')}
         </Button>
         <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
       </>
@@ -46,7 +49,7 @@ export function AccountMenu(): ReactNode {
         <button
           type="button"
           className="grid size-8 place-items-center rounded-full bg-surface-raised font-mono text-sm font-medium text-text ring-1 ring-border transition-colors hover:ring-border-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Menu du compte"
+          aria-label={t('nav.accountMenu')}
         >
           {initial(profile?.display_name ?? null, email)}
         </button>
@@ -60,16 +63,16 @@ export function AccountMenu(): ReactNode {
         >
           <div className="flex flex-col gap-1 px-2.5 py-2">
             <span className="truncate text-sm font-medium text-text">
-              {profile?.display_name ?? email ?? 'Mon compte'}
+              {profile?.display_name ?? email ?? t('nav.account')}
             </span>
             <span className="flex items-center gap-1.5">
               {isPro ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gold-dim px-1.5 py-0.5 font-mono text-[0.64rem] tracking-wide text-gold uppercase">
                   <Sparkles aria-hidden="true" className="size-3" />
-                  Pro
+                  {t('nav.pro')}
                 </span>
               ) : (
-                <span className="font-mono text-xs text-text-subtle">Plan gratuit</span>
+                <span className="font-mono text-xs text-text-subtle">{t('nav.freePlan')}</span>
               )}
             </span>
           </div>
@@ -79,19 +82,19 @@ export function AccountMenu(): ReactNode {
           <DropdownMenu.Item asChild>
             <Link to="/history" className={itemClass}>
               <Clock aria-hidden="true" className="size-4 text-text-muted" />
-              Historique
+              {t('nav.history')}
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
             <Link to="/collections" className={itemClass}>
               <FolderOpen aria-hidden="true" className="size-4 text-text-muted" />
-              Collections
+              {t('nav.collections')}
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
             <Link to="/councils" className={itemClass}>
               <Users aria-hidden="true" className="size-4 text-text-muted" />
-              Mes councils
+              {t('nav.myCouncils')}
             </Link>
           </DropdownMenu.Item>
 
@@ -103,7 +106,7 @@ export function AccountMenu(): ReactNode {
                 onSelect={() => openPaywall('generic')}
               >
                 <Sparkles aria-hidden="true" className="size-4 text-gold" />
-                Passer en PRO
+                {t('nav.upgradePro')}
               </DropdownMenu.Item>
             </>
           )}
@@ -112,8 +115,15 @@ export function AccountMenu(): ReactNode {
 
           <DropdownMenu.Item className={itemClass} onSelect={() => void signOut()}>
             <LogOut aria-hidden="true" className="size-4 text-text-muted" />
-            Se déconnecter
+            {t('nav.signOut')}
           </DropdownMenu.Item>
+
+          <DropdownMenu.Separator className="my-1 h-px bg-border" />
+          {/* Bascule de langue — discrète, au pied du menu compte */}
+          <div className="flex items-center justify-between px-2.5 py-1.5">
+            <span className="font-mono text-xs text-text-subtle">{t('lang.switch')}</span>
+            <LanguageToggle />
+          </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

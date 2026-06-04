@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Archive, CalendarDays, RotateCcw, Sparkles, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -18,7 +19,6 @@ import { getCouncil, councilMode, type CouncilRecord } from '@/lib/account'
 import {
   getDailyQuestion,
   recordDailyParticipation,
-  formatDayFr,
   hasParticipatedLocally,
   isPastDay,
   isValidDay,
@@ -72,7 +72,16 @@ function displayConsensus(realCount: number, realConsensus: number | null, day: 
  * streak éthique. Route : /jour (aujourd'hui) et /jour/:day (archive).
  */
 export function DailyQuestion(): ReactNode {
+  const { t, i18n } = useTranslation()
   const reduced = useReducedMotion()
+  // Date localisée selon la langue active (midi UTC pour éviter tout décalage de jour).
+  const formatDay = (d: string): string =>
+    new Date(`${d}T12:00:00Z`).toLocaleDateString(i18n.language, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
   const { day: dayParam } = useParams()
   const day = dayParam && isValidDay(dayParam) ? dayParam : todayUtc()
   const past = isPastDay(day)
@@ -116,14 +125,14 @@ export function DailyQuestion(): ReactNode {
         if (cancelled) return
         setLoad({
           kind: 'error',
-          message: err instanceof Error ? err.message : 'Question du jour indisponible.',
+          message: err instanceof Error ? err.message : t('daily.errorFallback'),
         })
       }
     })()
     return () => {
       cancelled = true
     }
-  }, [day, reset, gated])
+  }, [day, reset, gated, t])
 
   const handleConvoke = useCallback(() => {
     if (load.kind !== 'ready') return
@@ -172,7 +181,7 @@ export function DailyQuestion(): ReactNode {
             className="hidden items-center gap-1.5 font-mono text-xs text-text-subtle underline-offset-4 hover:text-text-muted hover:underline sm:inline-flex"
           >
             <Archive aria-hidden="true" className="size-3.5" />
-            archive
+            {t('daily.archiveLink')}
           </Link>
           <ThemeToggle />
           <AccountPopover variant="avatar" side="bottom" />
@@ -191,16 +200,14 @@ export function DailyQuestion(): ReactNode {
         {load.kind === 'missing' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <CalendarDays aria-hidden="true" className="size-10 text-text-subtle" />
-            <h1 className="font-display text-3xl text-text">Pas de question ce jour-là</h1>
-            <p className="max-w-md text-text-muted">
-              La Question du Jour n’a pas encore été publiée pour cette date.
-            </p>
+            <h1 className="font-display text-3xl text-text">{t('daily.missingTitle')}</h1>
+            <p className="max-w-md text-text-muted">{t('daily.missingBody')}</p>
             <div className="flex gap-2">
               <Button asChild>
-                <Link to="/jour">Question d’aujourd’hui</Link>
+                <Link to="/jour">{t('daily.todayQuestion')}</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/jour/archive">Voir l’archive</Link>
+                <Link to="/jour/archive">{t('daily.seeArchive')}</Link>
               </Button>
             </div>
           </div>
@@ -229,15 +236,12 @@ export function DailyQuestion(): ReactNode {
                 <div className="flex max-w-3xl flex-col items-center gap-6">
                   <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold-dim/40 px-3 py-1 font-mono text-xs tracking-wider text-gold uppercase">
                     <CalendarDays aria-hidden="true" className="size-3.5" />
-                    Question du {formatDayFr(load.bundle.day)}
+                    {t('daily.questionOf', { date: formatDay(load.bundle.day) })}
                   </span>
                   <h1 className="font-display text-4xl leading-tight text-text sm:text-5xl lg:text-7xl">
                     {load.bundle.question}
                   </h1>
-                  <p className="max-w-md text-lg text-text-muted">
-                    La même question pour tous, aujourd’hui. Convoquez votre assemblée et comparez
-                    son verdict au consensus mondial.
-                  </p>
+                  <p className="max-w-md text-lg text-text-muted">{t('daily.intro')}</p>
                 </div>
 
                 {/* Pouls social avant de jouer (amorçage déterministe sous le seuil). */}
@@ -252,10 +256,10 @@ export function DailyQuestion(): ReactNode {
                     <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-text-muted">
                       <span className="inline-flex items-center gap-1.5">
                         <Users aria-hidden="true" className="size-4 text-text-subtle" />
-                        {count.toLocaleString('fr-FR')} participations
+                        {t('daily.participations', { n: count.toLocaleString(i18n.language) })}
                       </span>
                       {consensus !== null && (
-                        <span className="font-mono">{consensus}% de consensus mondial</span>
+                        <span className="font-mono">{t('daily.worldConsensus', { n: consensus })}</span>
                       )}
                     </div>
                   )
@@ -268,15 +272,15 @@ export function DailyQuestion(): ReactNode {
                     className="h-auto bg-gold px-8 py-3 text-lg text-[oklch(18%_0.03_70)] hover:bg-gold/90"
                   >
                     <Sparkles aria-hidden="true" />
-                    Convoquer l’assemblée
+                    {t('daily.convene')}
                   </Button>
                   {alreadyDone && !past && (
-                    <p className="text-xs text-text-subtle">
-                      Vous avez déjà répondu aujourd’hui — vous pouvez recommencer.
-                    </p>
+                    <p className="text-xs text-text-subtle">{t('daily.alreadyAnswered')}</p>
                   )}
                   {past && (
-                    <p className="text-xs text-text-subtle">Question d’archive · {formatDayFr(day)}</p>
+                    <p className="text-xs text-text-subtle">
+                      {t('daily.archiveDay', { date: formatDay(day) })}
+                    </p>
                   )}
                 </div>
               </motion.section>
@@ -293,7 +297,7 @@ export function DailyQuestion(): ReactNode {
                   <div className="flex min-w-0 flex-col gap-3">
                     <span className="inline-flex w-fit items-center gap-2 font-mono text-xs tracking-wider text-gold uppercase">
                       <CalendarDays aria-hidden="true" className="size-3.5" />
-                      Question du {formatDayFr(load.bundle.day)}
+                      {t('daily.questionOf', { date: formatDay(load.bundle.day) })}
                     </span>
                     <h1 className="max-w-3xl font-display text-2xl leading-snug text-text sm:text-3xl">
                       {load.bundle.question}
@@ -302,7 +306,7 @@ export function DailyQuestion(): ReactNode {
                   </div>
                   <Button variant="outline" size="sm" onClick={reset} className="shrink-0">
                     <RotateCcw aria-hidden="true" />
-                    Recommencer
+                    {t('daily.restart')}
                   </Button>
                 </div>
 
@@ -314,7 +318,7 @@ export function DailyQuestion(): ReactNode {
                     >
                       <p className="text-sm text-text">{error}</p>
                       <Button variant="outline" size="sm" onClick={handleConvoke}>
-                        Réessayer
+                        {t('common.retry')}
                       </Button>
                     </div>
                   </FadeIn>

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { DropdownMenu } from 'radix-ui'
 import { Link, NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Calendar,
   Clock,
@@ -26,9 +27,9 @@ import { SidebarToggle } from './SidebarToggle'
 import { AccountPopover } from './AccountPopover'
 
 const NAV_SECONDARY = [
-  { to: '/history', label: 'Historique', icon: Clock },
-  { to: '/collections', label: 'Collections', icon: FolderOpen },
-  { to: '/councils', label: 'Councils', icon: Users },
+  { to: '/history', labelKey: 'nav.history', icon: Clock },
+  { to: '/collections', labelKey: 'nav.collections', icon: FolderOpen },
+  { to: '/councils', labelKey: 'nav.councils', icon: Users },
 ] as const
 
 const navItemClass = ({ isActive }: { isActive: boolean }): string =>
@@ -61,6 +62,7 @@ interface RunItemProps {
 
 /** Ligne de run dans la sidebar : titre + méta + menu 3 points au hover. */
 function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
+  const { t } = useTranslation()
   const score = item.verdict?.consensus_score ?? null
 
   const handleShare = async () => {
@@ -96,7 +98,7 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
-            aria-label="Actions"
+            aria-label={t('sidebar.actions')}
             className="grid size-7 shrink-0 place-items-center rounded-md text-text-subtle opacity-0 transition-opacity hover:bg-surface hover:text-text group-hover/run:opacity-100 focus-visible:opacity-100 focus-visible:outline-none data-[state=open]:opacity-100"
           >
             <MoreHorizontal aria-hidden="true" className="size-4" />
@@ -115,12 +117,12 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
               {item.is_pinned ? (
                 <>
                   <PinOff aria-hidden="true" className="size-3.5 text-text-muted" />
-                  Désépingler
+                  {t('sidebar.unpin')}
                 </>
               ) : (
                 <>
                   <Pin aria-hidden="true" className="size-3.5 text-text-muted" />
-                  Épingler
+                  {t('sidebar.pin')}
                 </>
               )}
             </DropdownMenu.Item>
@@ -129,14 +131,14 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
               onSelect={() => void handleShare()}
             >
               <Share2 aria-hidden="true" className="size-3.5 text-text-muted" />
-              Partager (copier)
+              {t('sidebar.shareCopy')}
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-dissent outline-none select-none data-[highlighted]:bg-surface"
               onSelect={() => onRemove(item.id)}
             >
               <Trash2 aria-hidden="true" className="size-3.5" />
-              Supprimer
+              {t('sidebar.delete')}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
@@ -158,6 +160,7 @@ function SectionTitle({ children }: { children: ReactNode }): ReactNode {
  * nouvelle question, navigation, runs épinglés, runs récents, et menu compte.
  */
 export function Sidebar(): ReactNode {
+  const { t } = useTranslation()
   const { open, isMobile, newQuestion } = useSidebar()
   const { isAuthenticated } = useAuth()
   const { pinned, recent, enabled, togglePin, remove } = useSidebarRuns()
@@ -182,7 +185,7 @@ export function Sidebar(): ReactNode {
   )
 
   return (
-    <aside className={asideClass} aria-label="Navigation principale" aria-hidden={!open}>
+    <aside className={asideClass} aria-label={t('nav.mainNav')} aria-hidden={!open}>
       {/* overflow-hidden interne : le contenu ne déborde pas quand la largeur est 0 */}
       <div
         className={cn(
@@ -207,7 +210,7 @@ export function Sidebar(): ReactNode {
             className="flex items-center gap-2.5 rounded-lg border border-border px-4 py-2.5 text-sm text-text transition-colors hover:border-gold/40 hover:bg-surface-raised"
           >
             <PenLine aria-hidden="true" className="size-4 text-gold" />
-            Nouvelle question
+            {t('sidebar.newQuestion')}
           </button>
         </div>
 
@@ -215,16 +218,16 @@ export function Sidebar(): ReactNode {
         <nav className="flex flex-col gap-0.5 px-4">
           <NavLink to="/jour" className={navItemClass}>
             <Calendar aria-hidden="true" className="size-4" />
-            Question du Jour
+            {t('nav.questionOfDay')}
           </NavLink>
           {/* Historique / Collections / Councils : réservés au compte connecté */}
           {isAuthenticated && (
             <>
               <div className="my-1.5 h-px bg-border" />
-              {NAV_SECONDARY.map(({ to, label, icon: Icon }) => (
+              {NAV_SECONDARY.map(({ to, labelKey, icon: Icon }) => (
                 <NavLink key={to} to={to} className={navItemClass}>
                   <Icon aria-hidden="true" className="size-4" />
-                  {label}
+                  {t(labelKey)}
                 </NavLink>
               ))}
             </>
@@ -236,7 +239,7 @@ export function Sidebar(): ReactNode {
           <div className="sidebar-scroll mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-3">
             {enabled && pinned.length > 0 && (
               <section className="flex flex-col gap-0.5">
-                <SectionTitle>Épinglés</SectionTitle>
+                <SectionTitle>{t('sidebar.pinned')}</SectionTitle>
                 {pinned.map((item) => (
                   <RunItem
                     key={item.id}
@@ -249,10 +252,10 @@ export function Sidebar(): ReactNode {
             )}
 
             <section className="flex flex-col gap-0.5">
-              <SectionTitle>Récent</SectionTitle>
+              <SectionTitle>{t('sidebar.recent')}</SectionTitle>
               {recent.length === 0 ? (
                 <p className="px-4 py-2.5 text-sm text-text-subtle">
-                  Aucune délibération pour l’instant.
+                  {t('sidebar.noDeliberations')}
                 </p>
               ) : (
                 recent.map((item) => (
@@ -265,24 +268,24 @@ export function Sidebar(): ReactNode {
                 ))
               )}
             </section>
-            {busy && <span className="sr-only" aria-live="polite">Mise à jour…</span>}
+            {busy && <span className="sr-only" aria-live="polite">{t('common.updating')}</span>}
           </div>
         ) : (
           /* ── Anonyme : invitation à créer un compte ── */
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <Lock aria-hidden="true" className="size-8 text-gold" />
             <p className="font-display text-lg text-text">
-              Ton historique et tes collections t’attendent
+              {t('sidebar.historyWaiting')}
             </p>
             <p className="text-sm text-text-muted">
-              Crée un compte gratuit pour retrouver toutes tes délibérations.
+              {t('sidebar.createAccountCta')}
             </p>
             <button
               type="button"
               onClick={() => setAuthOpen(true)}
               className="mt-1 w-full rounded-lg bg-gold px-3 py-2 text-sm font-medium text-[oklch(18%_0.03_70)] transition-colors hover:bg-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Se connecter
+              {t('nav.signIn')}
             </button>
           </div>
         )}

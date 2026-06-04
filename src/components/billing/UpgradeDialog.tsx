@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Dialog } from 'radix-ui'
+import { useTranslation } from 'react-i18next'
 import { Check, KeyRound, Loader2, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/use-auth'
@@ -19,32 +20,14 @@ interface UpgradeDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-/** Accroche contextuelle : on part de la valeur vécue, jamais d'un blocage sec. */
-const COPY: Record<PaywallReason, { title: string; sub: string }> = {
-  quota: {
-    title: 'Tu as adoré ce verdict ?',
-    sub: 'Tu as atteint tes questions du jour. Passe en PRO pour des modèles premium et des délibérations sans limite.',
-  },
-  premium_model: {
-    title: 'Convoque les grands modèles',
-    sub: 'GPT-5.1, Claude, Gemini 3… Des délégués plus fins pour des verdicts encore plus tranchés.',
-  },
-  history: {
-    title: 'Garde toutes tes délibérations',
-    sub: 'En gratuit, l’historique s’efface après 7 jours. PRO les conserve à vie, avec recherche.',
-  },
-  export: {
-    title: 'Exporte en haute définition',
-    sub: 'Image HD, Markdown, PDF, lien permanent — pour partager et archiver tes verdicts.',
-  },
-  councils: {
-    title: 'Compose plus d’assemblées',
-    sub: 'PRO débloque jusqu’à 10 councils sauvegardés et les modèles premium.',
-  },
-  generic: {
-    title: 'Passe à Quorum PRO',
-    sub: 'Modèles premium, historique illimité et export — sans casser ce que tu aimes du gratuit.',
-  },
+/** Clés i18n de l'accroche contextuelle (le texte vient des ressources). */
+const COPY_KEYS: Record<PaywallReason, { title: string; sub: string }> = {
+  quota: { title: 'pro.copy.quotaTitle', sub: 'pro.copy.quotaSub' },
+  premium_model: { title: 'pro.copy.premiumTitle', sub: 'pro.copy.premiumSub' },
+  history: { title: 'pro.copy.historyTitle', sub: 'pro.copy.historySub' },
+  export: { title: 'pro.copy.exportTitle', sub: 'pro.copy.exportSub' },
+  councils: { title: 'pro.copy.councilsTitle', sub: 'pro.copy.councilsSub' },
+  generic: { title: 'pro.copy.genericTitle', sub: 'pro.copy.genericSub' },
 }
 
 type CtaState =
@@ -60,11 +43,12 @@ type CtaState =
  * qui répond proprement « indisponible » (state `info`) sans rien facturer.
  */
 export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps): ReactNode {
+  const { t } = useTranslation()
   const { userId, email } = useAuth()
   // L'état CTA est remis à zéro à chaque ouverture via le `key` posé par
   // PaywallProvider (remontage), donc pas d'effet de synchronisation ici.
   const [cta, setCta] = useState<CtaState>({ kind: 'idle' })
-  const copy = COPY[reason]
+  const copy = COPY_KEYS[reason]
 
   const handleUpgrade = async (interval: BillingInterval) => {
     track('upgrade_intent', { reason, interval })
@@ -90,15 +74,15 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
             <div className="flex flex-col gap-1.5">
               <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gold-dim px-2 py-0.5 font-mono text-[0.64rem] tracking-wide text-gold uppercase">
                 <Sparkles aria-hidden="true" className="size-3" />
-                Quorum Pro
+                {t('pro.brand')}
               </span>
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
-                {copy.title}
+                {t(copy.title)}
               </Dialog.Title>
-              <p className="text-sm text-text-muted">{copy.sub}</p>
+              <p className="text-sm text-text-muted">{t(copy.sub)}</p>
             </div>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Fermer">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.close')}>
                 <X aria-hidden="true" />
               </Button>
             </Dialog.Close>
@@ -123,10 +107,10 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
               {cta.kind === 'loading' ? (
                 <>
                   <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                  Un instant…
+                  {t('pro.oneMoment')}
                 </>
               ) : (
-                <>Passer en PRO — {yearlyLabel()}</>
+                <>{t('pro.upgradeYearly', { label: yearlyLabel() })}</>
               )}
             </Button>
             <button
@@ -135,7 +119,7 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
               onClick={() => void handleUpgrade('monthly')}
               className="text-center text-sm text-text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:opacity-50"
             >
-              ou {monthlyLabel()}, sans engagement
+              {t('pro.monthlyOption', { label: monthlyLabel() })}
             </button>
           </div>
 
@@ -152,18 +136,13 @@ export function UpgradeDialog({ open, reason, onOpenChange }: UpgradeDialogProps
             <div className="flex flex-col items-center gap-1 border-t border-border pt-4 text-center">
               <span className="inline-flex items-center gap-1.5 text-sm text-text">
                 <KeyRound aria-hidden="true" className="size-4 text-text-muted" />
-                Déjà une clé OpenRouter ?
+                {t('pro.alreadyHaveKey')}
               </span>
-              <p className="text-xs text-text-subtle">
-                Le mode BYOK débloque les modèles premium sans abonnement (tu paies tes propres
-                appels).
-              </p>
+              <p className="text-xs text-text-subtle">{t('pro.byokNote')}</p>
             </div>
           )}
 
-          <p className="text-center text-xs text-text-subtle">
-            Le partage et les modèles gratuits restent illimités, toujours.
-          </p>
+          <p className="text-center text-xs text-text-subtle">{t('pro.freeAlwaysNote')}</p>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

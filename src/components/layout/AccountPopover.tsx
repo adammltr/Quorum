@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Popover } from 'radix-ui'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Code2, ExternalLink, FileText, LogOut, Settings, Shield, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/use-auth'
@@ -30,6 +31,7 @@ interface AccountPopoverProps {
  * de la sidebar (même contenu). Anonyme → invite à se connecter.
  */
 export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): ReactNode {
+  const { t } = useTranslation()
   const { ready, isAuthenticated, isPro, email, profile, signOut } = useAuth()
   const { openPaywall } = usePaywall()
   const [authOpen, setAuthOpen] = useState(false)
@@ -48,7 +50,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
             onClick={() => setAuthOpen(true)}
             className="w-full rounded-lg bg-gold px-3 py-2 text-sm font-medium text-[oklch(18%_0.03_70)] transition-colors hover:bg-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Se connecter
+            {t('nav.signIn')}
           </button>
           <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
         </>
@@ -57,14 +59,14 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
     return (
       <>
         <Button variant="outline" size="sm" onClick={() => setAuthOpen(true)}>
-          Se connecter
+          {t('nav.signIn')}
         </Button>
         <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
       </>
     )
   }
 
-  const name = profile?.display_name ?? email ?? 'Mon compte'
+  const name = profile?.display_name ?? email ?? t('nav.account')
   const avatar = (
     <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-raised font-mono text-sm font-medium text-text ring-1 ring-border">
       {initial(profile?.display_name ?? null, email)}
@@ -77,7 +79,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
         {variant === 'avatar' ? (
           <button
             type="button"
-            aria-label="Menu du compte"
+            aria-label={t('nav.accountMenu')}
             className="rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {avatar}
@@ -85,7 +87,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
         ) : (
           <button
             type="button"
-            aria-label="Menu du compte"
+            aria-label={t('nav.accountMenu')}
             className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {avatar}
@@ -93,9 +95,9 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
               <span className="truncate text-sm text-text">{name}</span>
               <span className="font-mono text-[0.64rem] tracking-wide uppercase">
                 {isPro ? (
-                  <span className="text-gold">Pro</span>
+                  <span className="text-gold">{t('accountPopover.proShort')}</span>
                 ) : (
-                  <span className="text-text-subtle">Gratuit</span>
+                  <span className="text-text-subtle">{t('accountPopover.freeShort')}</span>
                 )}
               </span>
             </span>
@@ -116,10 +118,10 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
               {isPro ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gold-dim px-1.5 py-0.5 font-mono text-[0.64rem] tracking-wide text-gold uppercase">
                   <Sparkles aria-hidden="true" className="size-3" />
-                  Pro
+                  {t('accountPopover.proShort')}
                 </span>
               ) : (
-                <span className="font-mono text-xs text-text-subtle">Plan gratuit</span>
+                <span className="font-mono text-xs text-text-subtle">{t('nav.freePlan')}</span>
               )}
             </span>
           </div>
@@ -129,7 +131,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
           <Popover.Close asChild>
             <Link to="/settings" className={itemClass}>
               <Settings aria-hidden="true" className="size-4 text-text-muted" />
-              Paramètres
+              {t('accountPopover.settings')}
             </Link>
           </Popover.Close>
 
@@ -141,7 +143,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
                 onClick={() => openPaywall('generic')}
               >
                 <Sparkles aria-hidden="true" className="size-4 text-gold" />
-                Passer en PRO
+                {t('nav.upgradePro')}
               </button>
             </Popover.Close>
           )}
@@ -155,17 +157,17 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
             className={itemClass}
           >
             <Shield aria-hidden="true" className="size-4 text-text-muted" />
-            Confidentialité
+            {t('footer.privacy')}
             <ExternalLink aria-hidden="true" className="ml-auto size-3 text-text-subtle" />
           </a>
           <a href="/terms" target="_blank" rel="noopener noreferrer" className={itemClass}>
             <FileText aria-hidden="true" className="size-4 text-text-muted" />
-            CGU
+            {t('footer.terms')}
             <ExternalLink aria-hidden="true" className="ml-auto size-3 text-text-subtle" />
           </a>
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={itemClass}>
             <Code2 aria-hidden="true" className="size-4 text-text-muted" />
-            GitHub
+            {t('accountPopover.github')}
             <ExternalLink aria-hidden="true" className="ml-auto size-3 text-text-subtle" />
           </a>
 
@@ -174,7 +176,7 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
           <Popover.Close asChild>
             <button type="button" className={itemClass} onClick={() => void signOut()}>
               <LogOut aria-hidden="true" className="size-4 text-text-muted" />
-              Se déconnecter
+              {t('nav.signOut')}
             </button>
           </Popover.Close>
         </Popover.Content>

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Copy, Crown, Lock, Pencil, Play, Plus, Sparkles, Trash2, Users } from 'lucide-react'
 import { AppShell } from '@/components/account/AppShell'
@@ -33,6 +34,7 @@ function CouncilCard({
   locked?: boolean
   onUnlock?: () => void
 }): ReactNode {
+  const { t } = useTranslation()
   const [confirming, setConfirming] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const reduced = useReducedMotion()
@@ -92,7 +94,7 @@ function CouncilCard({
         ) : council.is_preset ? (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 font-mono text-[0.64rem] tracking-wide text-text-subtle uppercase">
             <Sparkles aria-hidden="true" className="size-3" />
-            Preset
+            {t('councils.preset')}
           </span>
         ) : null}
       </div>
@@ -132,7 +134,7 @@ function CouncilCard({
             }}
           >
             <Lock aria-hidden="true" />
-            Débloquer en PRO
+            {t('councils.unlockPro')}
           </Button>
         ) : (
           <>
@@ -144,7 +146,7 @@ function CouncilCard({
               }}
             >
               <Play aria-hidden="true" />
-              Convoquer
+              {t('councils.convene')}
             </Button>
             {council.is_preset ? (
               <Button
@@ -156,14 +158,14 @@ function CouncilCard({
                 }}
               >
                 <Copy aria-hidden="true" />
-                Dupliquer
+                {t('councils.duplicate')}
               </Button>
             ) : (
               <>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Modifier"
+                  aria-label={t('councils.edit')}
                   onClick={(e) => {
                     stop(e)
                     onEdit(council)
@@ -181,7 +183,7 @@ function CouncilCard({
                         void onDelete(council.id)
                       }}
                     >
-                      Supprimer
+                      {t('common.delete')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -191,14 +193,14 @@ function CouncilCard({
                         setConfirming(false)
                       }}
                     >
-                      Annuler
+                      {t('common.cancel')}
                     </Button>
                   </span>
                 ) : (
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Supprimer le council"
+                    aria-label={t('councils.deleteCouncil')}
                     onClick={(e) => {
                       stop(e)
                       setConfirming(true)
@@ -255,6 +257,7 @@ const LOCKED_COUNCILS: readonly CouncilRecord[] = [
 ]
 
 export function Councils(): ReactNode {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { isPro } = useAuth()
   const { openPaywall } = usePaywall()
@@ -284,20 +287,20 @@ export function Councils(): ReactNode {
 
   return (
     <AppShell
-      title="Councils"
-      subtitle="Compose ton assemblée idéale, donne-lui un nom, réutilise-la. Pars d’un preset ou de zéro."
+      title={t('nav.councils')}
+      subtitle={t('councils.subtitle')}
       action={
         <Button onClick={openNew} disabled={atLimit}>
           <Plus aria-hidden="true" />
-          Composer
+          {t('councils.compose')}
         </Button>
       }
     >
       {atLimit && (
         <p className="text-sm text-text-muted">
-          Tu as atteint ta limite de {limit} council{limit > 1 ? 's' : ''} perso.{' '}
-          {!isPro && <span className="text-gold">Passe en PRO</span>}
-          {!isPro && ' pour en composer jusqu’à 10.'}
+          {t('councils.atLimit', { count: limit })}{' '}
+          {!isPro && <span className="text-gold">{t('councils.upgradeForMore')}</span>}
+          {!isPro && t('councils.upgradeForMoreSuffix')}
         </p>
       )}
       {error && (
@@ -318,13 +321,11 @@ export function Councils(): ReactNode {
           <section className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <Users aria-hidden="true" className="size-4 text-text-muted" />
-              <h2 className="font-mono text-xs tracking-wide text-text-muted uppercase">Mes councils</h2>
+              <h2 className="font-mono text-xs tracking-wide text-text-muted uppercase">{t('councils.mine')}</h2>
             </div>
             {mine.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border px-6 py-10 text-center">
-                <p className="text-sm text-text-muted">
-                  Aucun council perso. Duplique un preset ci-dessous ou compose le tien.
-                </p>
+                <p className="text-sm text-text-muted">{t('councils.emptyMine')}</p>
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -347,7 +348,7 @@ export function Councils(): ReactNode {
             <div className="flex items-center gap-2">
               <Sparkles aria-hidden="true" className="size-4 text-text-muted" />
               <h2 className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                Assemblées prêtes à l’emploi
+                {t('councils.readyMade')}
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -370,11 +371,11 @@ export function Councils(): ReactNode {
               <div className="flex items-center gap-2">
                 <Crown aria-hidden="true" className="size-4 text-gold" />
                 <h2 className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                  Assemblées premium
+                  {t('councils.premium')}
                 </h2>
               </div>
               <p className="mt-1 font-mono text-xs tracking-wider text-text-subtle uppercase">
-                Modèles premium — disponibles avec Quorum PRO
+                {t('councils.premiumNote')}
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Dialog } from 'radix-ui'
 import { ArrowLeft, FolderOpen, FolderPlus, Globe, Lock, Trash2, X } from 'lucide-react'
 import { AppShell } from '@/components/account/AppShell'
@@ -20,6 +21,7 @@ import {
 // ─── Détail d'une collection ────────────────────────────────────────────────
 
 function CollectionDetail({ id }: { id: string }): ReactNode {
+  const { t } = useTranslation()
   const { collections } = useCollections()
   const summary = collections.find((c) => c.id === id)
   const [runs, setRuns] = useState<HistoryItem[]>([])
@@ -64,13 +66,13 @@ function CollectionDetail({ id }: { id: string }): ReactNode {
 
   return (
     <AppShell
-      title={summary?.name ?? 'Collection'}
+      title={summary?.name ?? t('account.collectionDetailFallback')}
       subtitle={summary?.description ?? undefined}
       action={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => void togglePublic()}>
             {isPublic ? <Globe aria-hidden="true" /> : <Lock aria-hidden="true" />}
-            {isPublic ? 'Publique' : 'Privée'}
+            {isPublic ? t('account.public') : t('account.private')}
           </Button>
         </div>
       }
@@ -80,7 +82,7 @@ function CollectionDetail({ id }: { id: string }): ReactNode {
         className="inline-flex w-fit items-center gap-1.5 font-mono text-xs text-text-muted hover:text-text"
       >
         <ArrowLeft aria-hidden="true" className="size-3.5" />
-        Toutes les collections
+        {t('account.allCollections')}
       </Link>
 
       {loading ? (
@@ -91,10 +93,8 @@ function CollectionDetail({ id }: { id: string }): ReactNode {
         </div>
       ) : runs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="font-display text-xl text-text">Collection vide</p>
-          <p className="mt-1 text-sm text-text-muted">
-            Épingle une délibération depuis ton historique pour la ranger ici.
-          </p>
+          <p className="font-display text-xl text-text">{t('account.collectionEmptyTitle')}</p>
+          <p className="mt-1 text-sm text-text-muted">{t('account.collectionEmptyHint')}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -118,6 +118,7 @@ function NewCollectionDialog({
   onOpenChange: (o: boolean) => void
   onCreate: (name: string, description: string) => Promise<void>
 }): ReactNode {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -134,7 +135,7 @@ function NewCollectionDialog({
       setDescription('')
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Création impossible.')
+      setError(err instanceof Error ? err.message : t('account.createFailed'))
     } finally {
       setBusy(false)
     }
@@ -149,9 +150,9 @@ function NewCollectionDialog({
           aria-describedby={undefined}
         >
           <div className="flex items-start justify-between gap-4">
-            <Dialog.Title className="font-display text-xl text-text">Nouvelle collection</Dialog.Title>
+            <Dialog.Title className="font-display text-xl text-text">{t('account.newCollectionTitle')}</Dialog.Title>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Fermer">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.close')}>
                 <X aria-hidden="true" />
               </Button>
             </Dialog.Close>
@@ -159,13 +160,13 @@ function NewCollectionDialog({
           <form onSubmit={submit} className="flex flex-col gap-3">
             <Input
               autoFocus
-              placeholder="Nom (ex. « Décisions produit »)"
+              placeholder={t('account.collectionNamePlaceholder')}
               maxLength={80}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <Textarea
-              placeholder="Description (optionnelle)"
+              placeholder={t('account.collectionDescPlaceholder')}
               rows={2}
               maxLength={280}
               value={description}
@@ -177,7 +178,7 @@ function NewCollectionDialog({
               </p>
             )}
             <Button type="submit" disabled={busy || !name.trim()} className="self-end">
-              Créer la collection
+              {t('account.createCollection')}
             </Button>
           </form>
         </Dialog.Content>
@@ -193,6 +194,7 @@ function CollectionCard({
   collection: CollectionSummary
   onDelete: (id: string) => Promise<void>
 }): ReactNode {
+  const { t } = useTranslation()
   const [confirming, setConfirming] = useState(false)
   return (
     <GlassCard className="group flex flex-col gap-3 p-5">
@@ -212,22 +214,22 @@ function CollectionCard({
       </Link>
       <div className="mt-auto flex items-center justify-between pt-1">
         <span className="font-mono text-xs text-text-subtle">
-          {collection.item_count} {collection.item_count > 1 ? 'délibérations' : 'délibération'}
+          {t('account.itemCount', { count: collection.item_count })}
         </span>
         {confirming ? (
           <span className="flex items-center gap-1">
             <Button variant="destructive" size="xs" onClick={() => void onDelete(collection.id)}>
-              Supprimer
+              {t('common.delete')}
             </Button>
             <Button variant="ghost" size="xs" onClick={() => setConfirming(false)}>
-              Annuler
+              {t('common.cancel')}
             </Button>
           </span>
         ) : (
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Supprimer la collection"
+            aria-label={t('account.deleteCollection')}
             className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
             onClick={() => setConfirming(true)}
           >
@@ -242,6 +244,7 @@ function CollectionCard({
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export function Collections(): ReactNode {
+  const { t } = useTranslation()
   const { id } = useParams()
   const { collections, loading, error, atLimit, create, remove } = useCollections()
   const [newOpen, setNewOpen] = useState(false)
@@ -250,19 +253,20 @@ export function Collections(): ReactNode {
 
   return (
     <AppShell
-      title="Collections"
-      subtitle="Range tes délibérations dans des dossiers nommés. Privées par défaut, partageables."
+      title={t('account.collectionsTitle')}
+      subtitle={t('account.collectionsSubtitle')}
       action={
         <Button onClick={() => setNewOpen(true)} disabled={atLimit}>
           <FolderPlus aria-hidden="true" />
-          Nouvelle collection
+          {t('account.newCollection')}
         </Button>
       }
     >
       {atLimit && (
         <p className="text-sm text-text-muted">
-          Plan gratuit : 2 collections maximum.{' '}
-          <span className="text-gold">Passe en PRO</span> pour un nombre illimité.
+          {t('account.collectionsAtLimit')}{' '}
+          <span className="text-gold">{t('account.collectionsUpgrade')}</span>
+          {t('account.collectionsUpgradeSuffix')}
         </p>
       )}
       {error && (
@@ -281,14 +285,12 @@ export function Collections(): ReactNode {
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-16 text-center">
           <FolderOpen aria-hidden="true" className="size-8 text-text-subtle" />
           <div className="flex flex-col gap-1">
-            <p className="font-display text-xl text-text">Aucune collection</p>
-            <p className="text-sm text-text-muted">
-              Crée ta première collection pour organiser tes verdicts.
-            </p>
+            <p className="font-display text-xl text-text">{t('account.collectionsEmptyTitle')}</p>
+            <p className="text-sm text-text-muted">{t('account.collectionsEmptyHint')}</p>
           </div>
           <Button onClick={() => setNewOpen(true)}>
             <FolderPlus aria-hidden="true" />
-            Nouvelle collection
+            {t('account.newCollection')}
           </Button>
         </div>
       ) : (

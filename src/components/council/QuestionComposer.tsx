@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useReducedMotion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import { CornerDownLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -25,6 +26,7 @@ export function QuestionComposer({
   variant = 'hero',
   autoFocus = false,
 }: QuestionComposerProps): ReactNode {
+  const { t } = useTranslation()
   const reduced = useReducedMotion()
   const [value, setValue] = useState('')
   const [focused, setFocused] = useState(false)
@@ -98,7 +100,7 @@ export function QuestionComposer({
         )}
       >
         <label htmlFor="council-question" className="sr-only">
-          Votre question à l’assemblée
+          {t('composer.label')}
         </label>
         <div className="relative flex-1 overflow-hidden">
           {/* Surimpression typewriter — purement visuelle, alignée sur le textarea. */}
@@ -125,7 +127,7 @@ export function QuestionComposer({
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             rows={isHero ? 2 : 1}
-            placeholder={showTypewriter ? '' : 'Posez une question à l’assemblée…'}
+            placeholder={showTypewriter ? '' : t('composer.placeholder')}
             className={cn(
               'min-h-0 w-full resize-none bg-transparent px-3 py-2 text-text placeholder:text-text-subtle focus:outline-none',
               fieldText,
@@ -138,7 +140,7 @@ export function QuestionComposer({
           disabled={disabled || value.trim().length === 0}
           className="shrink-0 self-stretch px-5"
         >
-          <span className={isHero ? 'inline' : 'hidden sm:inline'}>Convoquer</span>
+          <span className={isHero ? 'inline' : 'hidden sm:inline'}>{t('composer.convene')}</span>
           <CornerDownLeft aria-hidden="true" />
         </Button>
       </form>
@@ -146,7 +148,7 @@ export function QuestionComposer({
       {/* Suggestions : montrent en un coup d'œil les dilemmes où les modèles divergent */}
       {suggestions.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-3 lg:flex-nowrap">
-          <span className="font-mono text-xs text-text-subtle whitespace-nowrap">Ou explorez :</span>
+          <span className="font-mono text-xs text-text-subtle whitespace-nowrap">{t('composer.orExplore')}</span>
           {suggestions.map((q) => (
             <button
               key={q}
