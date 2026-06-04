@@ -30,6 +30,14 @@ const DailyArchive = lazy(() =>
 // Page d'un résultat complet (run détenu) — historique cliquable.
 const RunResult = lazy(() => import('./pages/RunResult').then((m) => ({ default: m.RunResult })))
 
+// Pages légales — chargées à la demande (hors parcours principal).
+const PrivacyPolicy = lazy(() =>
+  import('./pages/PrivacyPolicy').then((m) => ({ default: m.PrivacyPolicy })),
+)
+const TermsOfService = lazy(() =>
+  import('./pages/TermsOfService').then((m) => ({ default: m.TermsOfService })),
+)
+
 // 404 — page introuvable (catch-all), chargée à la demande.
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })))
 
@@ -65,6 +73,9 @@ export function App(): ReactNode {
         <Route path="/councils" element={<Councils />} />
         {/* Page de résultat complète d'un run détenu (depuis l'historique) */}
         <Route path="/run/:runId" element={<RunResult />} />
+        {/* Pages légales */}
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         {/* Page interne non listée — vitrine du design system (admin uniquement) */}
         <Route
           path="/_designsystem"
