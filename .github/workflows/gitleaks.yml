@@ -5,6 +5,9 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main]
+  # Déclenchement manuel : permet de relancer un scan à la demande et de
+  # rafraîchir le badge README (qui reflète le dernier run de la branche par défaut).
+  workflow_dispatch:
 
 permissions:
   contents: read
