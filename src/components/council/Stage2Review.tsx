@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Check } from 'lucide-react'
 import { GlassCard } from '@/components/primitives'
@@ -24,6 +24,7 @@ interface Stage2ReviewProps {
 
 export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): ReactNode {
   const reduced = useReducedMotion()
+  const [explain, setExplain] = useState(false)
 
   const successful = models.filter((m) => m.phase === 'complete')
   const voted = new Set(reviews.map((r) => r.reviewerSlot))
@@ -35,6 +36,16 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
         .sort((a, b) => b.score - a.score)
     : []
   const maxScore = ranking.length > 0 ? Math.max(...ranking.map((r) => r.score), 1) : 1
+
+  // Reviewers ayant rendu un classement exploitable (pour l'explication détaillée).
+  const ballots = reviews.filter((r) => r.parseOk && r.ranking.length > 0)
+  const ordinal = (i: number) => `#${i + 1}`
+  // Phrase en langage naturel : « X a classé A #1, B #2, C #3. »
+  const ballotSentence = (r: ReviewState): string =>
+    `${labelOf(r.reviewerSlot)} a classé ${r.ranking.map((s, i) => `${labelOf(s)} ${ordinal(i)}`).join(', ')}.`
+  // Total maximal théorique : chaque bulletin attribue 3 pts à son 1er choix.
+  const maxBorda = ballots.length * 3
+  const top = ranking[0]
 
   return (
     <GlassCard className="flex flex-col gap-6 p-6 sm:p-8">
@@ -138,6 +149,48 @@ export function Stage2Review({ models, reviews, borda }: Stage2ReviewProps): Rea
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Explication du calcul Borda — accordéon discret, en langage naturel */}
+      {ranking.length > 0 && ballots.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => setExplain((v) => !v)}
+            aria-expanded={explain}
+            className="self-start text-xs text-text-subtle underline-offset-4 transition-colors hover:text-text-muted hover:underline"
+          >
+            Comment ce score est calculé {explain ? '↑' : '↓'}
+          </button>
+          <AnimatePresence initial={false}>
+            {explain && (
+              <motion.div
+                key="explain"
+                className="overflow-hidden"
+                initial={reduced ? false : { height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                transition={easeMedium}
+              >
+                <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-surface-raised/40 px-4 py-3">
+                  <ul className="flex flex-col gap-1.5">
+                    {ballots.map((r) => (
+                      <li key={r.reviewerSlot} className="text-sm leading-relaxed text-text-muted">
+                        {ballotSentence(r)}
+                      </li>
+                    ))}
+                  </ul>
+                  {top && (
+                    <p className="border-t border-border/60 pt-2 font-mono text-xs text-text">
+                      Score final Borda : {labelOf(top.slot)} {top.score}/{maxBorda} pts (1
+                      <sup>er</sup> = 3 pts, 2<sup>e</sup> = 2 pts, 3<sup>e</sup> = 1 pt).
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {ranking.length > 0 && (
         <p className="max-w-2xl text-sm leading-relaxed text-text-muted">

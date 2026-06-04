@@ -24,13 +24,16 @@ export function TrustBadges(): ReactNode {
           </li>
         ))}
       </ul>
-      {/* Liens légaux — discrets, en pied de page */}
-      <nav className="flex items-center gap-4 text-xs text-text-subtle" aria-label="Liens légaux">
-        <Link to="/privacy" className="underline-offset-4 transition-colors hover:text-text-muted hover:underline">
+      {/* Liens légaux — distincts des badges : sérif éditorial, pied de page */}
+      <nav
+        className="mt-4 flex items-center gap-4 font-display text-sm text-text-muted"
+        aria-label="Liens légaux"
+      >
+        <Link to="/privacy" className="underline-offset-4 transition-colors hover:text-text hover:underline">
           Confidentialité
         </Link>
         <span aria-hidden="true">·</span>
-        <Link to="/terms" className="underline-offset-4 transition-colors hover:text-text-muted hover:underline">
+        <Link to="/terms" className="underline-offset-4 transition-colors hover:text-text hover:underline">
           CGU
         </Link>
       </nav>

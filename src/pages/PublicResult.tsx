@@ -101,7 +101,12 @@ export function PublicResult(): ReactNode {
   }, [bundle, labelOf])
 
   const reviews: ReviewState[] = useMemo(
-    () => bundle?.reviews.map((r) => ({ reviewerSlot: r.reviewer_slot, parseOk: true })) ?? [],
+    () =>
+      bundle?.reviews.map((r) => ({
+        reviewerSlot: r.reviewer_slot,
+        parseOk: true,
+        ranking: [...r.ranking].sort((a, b) => a.position - b.position).map((e) => e.target_slot),
+      })) ?? [],
     [bundle],
   )
 

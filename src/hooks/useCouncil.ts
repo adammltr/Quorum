@@ -49,6 +49,8 @@ export interface ModelState {
 export interface ReviewState {
   reviewerSlot: string
   parseOk: boolean
+  /** Classement rendu par ce reviewer : slots ordonnés du 1er au dernier. */
+  ranking: string[]
 }
 
 /** Synthèse du Chairman (Stage 3). */
@@ -246,7 +248,10 @@ export function useCouncil(): CouncilState {
           ensureRaf()
           break
         case 'review':
-          setReviews((prev) => [...prev, { reviewerSlot: e.reviewer_slot, parseOk: e.parse_ok }])
+          setReviews((prev) => [
+            ...prev,
+            { reviewerSlot: e.reviewer_slot, parseOk: e.parse_ok, ranking: e.ranking ?? [] },
+          ])
           break
         case 'borda':
           setBorda(e.borda_scores)

@@ -134,6 +134,12 @@ export function Stage3Verdict({ verdict, phase }: Stage3VerdictProps): ReactNode
             )}
           </div>
         </div>
+
+        {/* Disclaimer factuel — Quorum synthétise des perspectives, ne valide pas des faits. */}
+        <p className="mt-6 border-t border-border/60 pt-4 text-xs text-text-subtle italic">
+          ⚠ Le consensus Quorum ne valide pas des faits — il synthétise des perspectives. Jamais de
+          décision médicale, légale ou financière basée sur ce verdict.
+        </p>
       </div>
     </motion.section>
   )

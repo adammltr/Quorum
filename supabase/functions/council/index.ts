@@ -312,7 +312,12 @@ async function runStage2(
     }
 
     await persistReview(service, runId, reviewer.delegate, ranking, raw, parseOk)
-    emit.send({ type: 'review', reviewer_slot: reviewer.delegate.slot, parse_ok: parseOk })
+    emit.send({
+      type: 'review',
+      reviewer_slot: reviewer.delegate.slot,
+      parse_ok: parseOk,
+      ranking: ranking.map((r) => r.target_slot),
+    })
   })
 
   await Promise.allSettled(tasks)

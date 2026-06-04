@@ -20,7 +20,7 @@ export type CouncilEvent =
   /** Changement de statut d'un délégué (dégradation gracieuse). */
   | { type: 'model_status'; slot: string; model_id: string; status: ResponseStatus; error?: string }
   /** Un reviewer a rendu son classement (Stage 2). */
-  | { type: 'review'; reviewer_slot: string; parse_ok: boolean }
+  | { type: 'review'; reviewer_slot: string; parse_ok: boolean; ranking?: string[] }
   /** Scores Borda agrégés (Stage 2 terminé). */
   | { type: 'borda'; borda_scores: Record<string, number> }
   /** Token du verdict Chairman (Stage 3). */

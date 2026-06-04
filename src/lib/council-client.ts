@@ -24,7 +24,7 @@ export type CouncilEvent =
   | { type: 'stage'; stage: 1 | 2 | 3 }
   | { type: 'token'; slot: string; model_id: string; delta: string }
   | { type: 'model_status'; slot: string; model_id: string; status: ResponseStatus; error?: string }
-  | { type: 'review'; reviewer_slot: string; parse_ok: boolean }
+  | { type: 'review'; reviewer_slot: string; parse_ok: boolean; ranking?: string[] }
   | { type: 'borda'; borda_scores: Record<string, number> }
   | { type: 'verdict_token'; delta: string }
   | {
@@ -254,9 +254,16 @@ function runMock(
   // ── Stage 2 : peer-review aveugle ──
   after(6500, () => onEvent({ type: 'stage', stage: 2 }))
   // Les délégués votent l'un après l'autre (anticipation avant l'agrégation).
-  const reviewers = ['C', 'A', 'D']
-  reviewers.forEach((slot, i) =>
-    after(6900 + i * 520, () => onEvent({ type: 'review', reviewer_slot: slot, parse_ok: true })),
+  // Chaque reviewer rend un classement (ordre des slots du 1er au dernier).
+  const reviewers: { slot: string; ranking: string[] }[] = [
+    { slot: 'C', ranking: ['A', 'D', 'B'] },
+    { slot: 'A', ranking: ['D', 'B', 'C'] },
+    { slot: 'D', ranking: ['A', 'B', 'C'] },
+  ]
+  reviewers.forEach(({ slot, ranking }, i) =>
+    after(6900 + i * 520, () =>
+      onEvent({ type: 'review', reviewer_slot: slot, parse_ok: true, ranking }),
+    ),
   )
   // Agrégation Borda : A plébiscité, D suit, C en retrait → tiers nets.
   const borda = { A: 6, D: 4, C: 2 }
