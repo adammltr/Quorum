@@ -29,7 +29,7 @@ function LayoutInner({ children }: { children: ReactNode }): ReactNode {
       <div
         className={cn(
           'min-h-dvh transition-[margin] duration-200 ease-out',
-          !isMobile && open ? 'ml-[260px]' : 'ml-0',
+          !isMobile && open ? 'ml-[288px]' : 'ml-0',
         )}
       >
         {children}

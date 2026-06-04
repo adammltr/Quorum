@@ -33,7 +33,7 @@ const NAV_SECONDARY = [
 
 const navItemClass = ({ isActive }: { isActive: boolean }): string =>
   cn(
-    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+    'flex items-center gap-2.5 rounded-lg px-4 py-2.5 text-sm transition-colors',
     isActive
       ? 'bg-gold-dim text-gold'
       : 'text-text-muted hover:bg-surface-raised hover:text-text',
@@ -77,7 +77,7 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
     <div className="group/run relative flex items-center rounded-lg pr-1 transition-colors hover:bg-surface-raised">
       <Link
         to={`/run/${item.id}`}
-        className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2"
+        className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2.5"
         title={item.question}
       >
         <span className="min-w-0 flex-1 truncate text-sm text-text-muted group-hover/run:text-text">
@@ -147,7 +147,7 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
 
 function SectionTitle({ children }: { children: ReactNode }): ReactNode {
   return (
-    <h2 className="px-3 pb-1 font-mono text-xs tracking-wider text-text-subtle uppercase">
+    <h2 className="px-4 pb-1 font-mono text-xs tracking-wider text-text-subtle uppercase">
       {children}
     </h2>
   )
@@ -173,10 +173,12 @@ export function Sidebar(): ReactNode {
   }
 
   const asideClass = cn(
-    'fixed inset-y-0 left-0 z-40 flex h-dvh flex-col border-r border-border bg-surface transition-[width,transform] duration-200 ease-out',
+    // overflow-hidden : en w-0 (fermée), clippe le contenu interne pour qu'il ne
+    // déborde pas et n'intercepte pas les clics du hamburger du header.
+    'fixed inset-y-0 left-0 z-40 flex h-dvh flex-col overflow-hidden border-r border-border bg-surface transition-[width,transform] duration-200 ease-out',
     isMobile
-      ? cn('w-[260px] shadow-2xl', open ? 'translate-x-0' : '-translate-x-full')
-      : cn('translate-x-0', open ? 'w-[260px]' : 'w-0'),
+      ? cn('w-[288px] shadow-2xl', open ? 'translate-x-0' : '-translate-x-full')
+      : cn('translate-x-0', open ? 'w-[288px]' : 'w-0'),
   )
 
   return (
@@ -184,12 +186,12 @@ export function Sidebar(): ReactNode {
       {/* overflow-hidden interne : le contenu ne déborde pas quand la largeur est 0 */}
       <div
         className={cn(
-          'flex h-full w-[260px] flex-col overflow-hidden transition-opacity duration-150',
+          'flex h-full w-[288px] flex-col overflow-hidden transition-opacity duration-150',
           open ? 'opacity-100 delay-[50ms]' : 'opacity-0',
         )}
       >
         {/* ── Haut : marque + nouvelle question ── */}
-        <div className="flex flex-col gap-2 p-3">
+        <div className="flex flex-col gap-2 p-4">
           <div className="flex items-center justify-between">
             <Link
               to="/"
@@ -202,7 +204,7 @@ export function Sidebar(): ReactNode {
           <button
             type="button"
             onClick={newQuestion}
-            className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2 text-sm text-text transition-colors hover:border-gold/40 hover:bg-surface-raised"
+            className="flex items-center gap-2.5 rounded-lg border border-border px-4 py-2.5 text-sm text-text transition-colors hover:border-gold/40 hover:bg-surface-raised"
           >
             <PenLine aria-hidden="true" className="size-4 text-gold" />
             Nouvelle question
@@ -210,7 +212,7 @@ export function Sidebar(): ReactNode {
         </div>
 
         {/* ── Navigation (publique : Nouvelle question + Question du Jour) ── */}
-        <nav className="flex flex-col gap-0.5 px-3">
+        <nav className="flex flex-col gap-0.5 px-4">
           <NavLink to="/jour" className={navItemClass}>
             <Calendar aria-hidden="true" className="size-4" />
             Question du Jour
@@ -231,7 +233,7 @@ export function Sidebar(): ReactNode {
 
         {isAuthenticated ? (
           /* ── Listes (épinglés + récents), zone scrollable ── */
-          <div className="sidebar-scroll mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
+          <div className="sidebar-scroll mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-3">
             {enabled && pinned.length > 0 && (
               <section className="flex flex-col gap-0.5">
                 <SectionTitle>Épinglés</SectionTitle>
@@ -249,7 +251,7 @@ export function Sidebar(): ReactNode {
             <section className="flex flex-col gap-0.5">
               <SectionTitle>Récent</SectionTitle>
               {recent.length === 0 ? (
-                <p className="px-3 py-2 text-sm text-text-subtle">
+                <p className="px-4 py-2.5 text-sm text-text-subtle">
                   Aucune délibération pour l’instant.
                 </p>
               ) : (
@@ -267,12 +269,12 @@ export function Sidebar(): ReactNode {
           </div>
         ) : (
           /* ── Anonyme : invitation à créer un compte ── */
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-            <Lock aria-hidden="true" className="size-6 text-gold" />
-            <p className="text-sm text-text-muted">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+            <Lock aria-hidden="true" className="size-8 text-gold" />
+            <p className="font-display text-lg text-text">
               Ton historique et tes collections t’attendent
             </p>
-            <p className="text-xs text-text-subtle">
+            <p className="text-sm text-text-muted">
               Crée un compte gratuit pour retrouver toutes tes délibérations.
             </p>
             <button
