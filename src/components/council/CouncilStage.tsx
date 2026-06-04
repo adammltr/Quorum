@@ -159,7 +159,8 @@ export function CouncilStage(): ReactNode {
 
       {/* Barre supérieure — la marque et la navigation vivent dans la sidebar */}
       <header className="flex items-center justify-between px-6 py-5 lg:px-10">
-        <SidebarToggle hideWhenOpen />
+        {/* Hamburger masqué sur la page d'accueil vierge — apparaît après soumission */}
+        {started ? <SidebarToggle hideWhenOpen /> : <span />}
         <div className="flex items-center gap-3">
           {isAdmin && (
             <Link

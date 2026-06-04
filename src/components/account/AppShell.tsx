@@ -1,16 +1,18 @@
-import { type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { CalendarDays, Clock, FolderOpen, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import { useAuth } from '@/components/auth/use-auth'
 import { AccountMenu } from './AccountMenu'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { to: '/jour', label: 'Question du jour', icon: CalendarDays },
-  { to: '/history', label: 'Historique', icon: Clock },
-  { to: '/collections', label: 'Collections', icon: FolderOpen },
-  { to: '/councils', label: 'Councils', icon: Users },
+  // `gated` : nécessite un compte. « Question du jour » reste accessible à tous.
+  { to: '/jour', label: 'Question du jour', icon: CalendarDays, gated: false },
+  { to: '/history', label: 'Historique', icon: Clock, gated: true },
+  { to: '/collections', label: 'Collections', icon: FolderOpen, gated: true },
+  { to: '/councils', label: 'Councils', icon: Users, gated: true },
 ] as const
 
 interface AppShellProps {
@@ -23,6 +25,19 @@ interface AppShellProps {
 
 /** Coquille commune aux espaces « compte » (historique, collections, councils). */
 export function AppShell({ title, subtitle, action, children }: AppShellProps): ReactNode {
+  const { isAuthenticated } = useAuth()
+  // Onglet verrouillé cliqué : affiche un popover inline éphémère (2 s).
+  const [lockedHint, setLockedHint] = useState<string | null>(null)
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (hintTimer.current) clearTimeout(hintTimer.current)
+  }, [])
+  const showLockedHint = (to: string): void => {
+    setLockedHint(to)
+    if (hintTimer.current) clearTimeout(hintTimer.current)
+    hintTimer.current = setTimeout(() => setLockedHint(null), 2000)
+  }
+
   return (
     <div className="relative flex min-h-dvh flex-col">
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
@@ -51,23 +66,49 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
       <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-8 px-6 pb-16 lg:px-10">
         <div className="flex flex-col gap-6 pt-2">
           <nav className="flex items-center gap-1" aria-label="Espaces du compte">
-            {NAV.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    'inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm transition-colors',
-                    isActive
-                      ? 'bg-surface-raised text-text ring-1 ring-border'
-                      : 'text-text-muted hover:text-text',
-                  )
-                }
-              >
-                <Icon aria-hidden="true" className="size-4" />
-                {label}
-              </NavLink>
-            ))}
+            {NAV.map(({ to, label, icon: Icon, gated }) => {
+              const locked = gated && !isAuthenticated
+              if (locked) {
+                return (
+                  <div key={to} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => showLockedHint(to)}
+                      aria-disabled="true"
+                      className="inline-flex cursor-not-allowed items-center gap-2 rounded-full px-3.5 py-1.5 text-sm text-text-muted opacity-40 transition-colors"
+                    >
+                      <Icon aria-hidden="true" className="size-4" />
+                      {label}
+                    </button>
+                    {lockedHint === to && (
+                      <span
+                        role="status"
+                        className="absolute top-full left-1/2 z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-surface-raised px-2.5 py-1 text-xs text-text-subtle shadow-md"
+                      >
+                        Connecte-toi pour accéder à l’historique
+                      </span>
+                    )}
+                  </div>
+                )
+              }
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      'inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm transition-colors',
+                      isActive
+                        ? 'bg-surface-raised text-text ring-1 ring-border'
+                        : 'text-text-muted hover:text-text',
+                    )
+                  }
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                  {label}
+                </NavLink>
+              )
+            })}
           </nav>
 
           <div className="flex flex-wrap items-end justify-between gap-4">
