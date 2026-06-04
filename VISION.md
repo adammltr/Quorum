@@ -1,10 +1,10 @@
 # Vision
 
-*Actively developed, solo. Last shipped: structured Chairman verdicts (June 2026). This file moves when the code does.*
+*Actively developed, solo. Last shipped: structured Chairman verdicts (June 2026).*
 
 ## The thesis
 
-A single language model is a confident narrator with no editor. It cannot tell you where it is weakest, because the same process that produced the answer produced the certainty around it. The conviction behind Quorum is narrow and stubborn: **the only thing that reliably audits a model is another model that disagrees with it.** Agreement between independent reasoners is a strong prior. Disagreement is not failure — it is a map of exactly where a question is still hard. Most tools hide that map behind one voice. Quorum draws it.
+A single language model is a confident narrator with no editor. It cannot tell you where it is weakest, because the same process that produced the answer produced the certainty around it. The conviction behind Quorum is narrow: **the only thing that reliably audits a model is another model that disagrees with it.** Agreement between independent reasoners is a strong prior. Disagreement is not failure — it is a map of exactly where a question is still hard. Most tools hide that map behind one voice. Quorum draws it.
 
 ## Where we are
 
