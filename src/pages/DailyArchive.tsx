@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Users } from 'lucide-react'
 import { AppShell } from '@/components/account/AppShell'
 import { Button } from '@/components/ui/button'
+import { DailyGate } from '@/components/daily/DailyGate'
+import { useAuth } from '@/components/auth/use-auth'
 import {
   listDailyArchive,
   dailyPath,
@@ -25,6 +27,8 @@ type Load =
  */
 export function DailyArchive(): ReactNode {
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
+  const [gateOpen, setGateOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
   const today = todayUtc()
 
   useEffect(() => {
@@ -80,10 +84,19 @@ export function DailyArchive(): ReactNode {
 
       {load.kind === 'ready' && load.entries.length > 0 && (
         <ul className="flex flex-col gap-3">
-          {load.entries.map((e) => (
+          {load.entries.map((e) => {
+            // Délibérations passées réservées aux comptes (la QdJ du jour reste libre).
+            const gated = !isAuthenticated && e.day !== today
+            return (
             <li key={e.day}>
               <Link
                 to={dailyPath(e.day)}
+                onClick={(ev) => {
+                  if (gated) {
+                    ev.preventDefault()
+                    setGateOpen(true)
+                  }
+                }}
                 className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-raised/50 px-5 py-4 transition-colors hover:border-border-bright hover:bg-surface-raised"
               >
                 <div className="flex min-w-0 flex-col gap-1.5">
@@ -116,9 +129,12 @@ export function DailyArchive(): ReactNode {
                 />
               </Link>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
+
+      <DailyGate open={gateOpen} onOpenChange={setGateOpen} />
     </AppShell>
   )
 }

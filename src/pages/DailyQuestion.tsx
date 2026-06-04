@@ -12,6 +12,8 @@ import { StageStepper } from '@/components/council/StageStepper'
 import { Stage2Review } from '@/components/council/Stage2Review'
 import { Stage3Verdict } from '@/components/council/Stage3Verdict'
 import { DailyResultPanel } from '@/components/daily/DailyResultPanel'
+import { DailyGateInline } from '@/components/daily/DailyGate'
+import { useAuth } from '@/components/auth/use-auth'
 import { getCouncil, councilMode, type CouncilRecord } from '@/lib/account'
 import {
   getDailyQuestion,
@@ -74,6 +76,9 @@ export function DailyQuestion(): ReactNode {
   const { day: dayParam } = useParams()
   const day = dayParam && isValidDay(dayParam) ? dayParam : todayUtc()
   const past = isPastDay(day)
+  const { isAuthenticated } = useAuth()
+  // Délibération passée réservée aux comptes ; la QdJ du jour reste libre.
+  const gated = past && !isAuthenticated
 
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
   const [council, setCouncil] = useState<CouncilRecord | null>(null)
@@ -85,6 +90,7 @@ export function DailyQuestion(): ReactNode {
 
   // Charge la QdJ + le council officiel (pour le rendu optimiste + le mode).
   useEffect(() => {
+    if (gated) return
     let cancelled = false
     void (async () => {
       setLoad({ kind: 'loading' })
@@ -117,7 +123,7 @@ export function DailyQuestion(): ReactNode {
     return () => {
       cancelled = true
     }
-  }, [day, reset])
+  }, [day, reset, gated])
 
   const handleConvoke = useCallback(() => {
     if (load.kind !== 'ready') return
@@ -174,7 +180,9 @@ export function DailyQuestion(): ReactNode {
       </header>
 
       <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 pb-12 lg:px-10">
-        {load.kind === 'loading' && (
+        {gated && <DailyGateInline />}
+
+        {!gated && load.kind === 'loading' && (
           <div className="flex flex-1 items-center justify-center">
             <div className="h-24 w-full max-w-md animate-pulse rounded-2xl bg-surface-raised/60" />
           </div>
