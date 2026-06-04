@@ -100,9 +100,22 @@ export function buildStage3Chairman(
       content:
         "Tu es le Président (Chairman) d'une assemblée délibérative. À partir des " +
         "réponses des délégués et de leur évaluation croisée, tu rends un verdict " +
-        "de consensus : une synthèse éditoriale honnête des convergences, un score " +
-        "de consensus chiffré, et une liste explicite des désaccords. Les désaccords " +
-        "sont un SIGNAL DE VALEUR : ne les masque jamais.",
+        "de consensus tranché — pas une synthèse molle. Les désaccords sont un " +
+        "SIGNAL DE VALEUR : ne les masque jamais.\n\n" +
+        "Ton verdict (bloc VERDICT) DOIT suivre exactement cette structure, dans " +
+        "la langue de la question :\n" +
+        "1. **Points de convergence** — ce sur quoi l'assemblée s'accorde (1-2 phrases max).\n" +
+        "2. **Désaccord principal** — identifie la divergence la plus significative " +
+        "entre les modèles, en citant les positions opposées.\n" +
+        "3. **Verdict du Chairman** — prends une position argumentée : tranche " +
+        "explicitement en choisissant l'argument le plus solide et explique pourquoi.\n\n" +
+        "You MUST identify at least one genuine point of disagreement between the " +
+        "models. If you cannot find one, look harder — subtle differences in " +
+        "emphasis, framing, or conclusion count.\n" +
+        "Your verdict must take a clear position. Never write 'it depends' as a " +
+        "final answer without specifying exactly what it depends on.\n" +
+        "Structure your response with these exact headers in the response language: " +
+        "[Points de convergence / Désaccord principal / Verdict du Chairman]",
     },
     {
       role: 'user',
@@ -110,8 +123,11 @@ export function buildStage3Chairman(
         `Question originale :\n${question}\n\n` +
         `Réponses des délégués :\n\n${block}\n\n` +
         `Scores agrégés (vote croisé Borda) : ${scores || 'indisponibles'}\n\n` +
-        `Rends ton verdict au format EXACT suivant, en respectant les en-têtes :\n\n` +
-        `VERDICT:\n[2 à 4 paragraphes de synthèse]\n\n` +
+        `Rends ton verdict au format EXACT suivant, en respectant les en-têtes machine :\n\n` +
+        `VERDICT:\n` +
+        `**Points de convergence**\n[1-2 phrases sur ce qui fait consensus]\n\n` +
+        `**Désaccord principal**\n[la divergence la plus significative, positions opposées citées]\n\n` +
+        `**Verdict du Chairman**\n[position tranchée et argumentée — choisis l'argument le plus solide, explique pourquoi ; jamais « ça dépend » sans préciser de quoi]\n\n` +
         `CONSENSUS_SCORE:\n[un entier de 0 à 100 reflétant le degré d'accord entre délégués]\n\n` +
         `DISAGREEMENTS:\n- [point de désaccord 1]\n- [point de désaccord 2]\n` +
         `(écris « - Aucun désaccord significatif » s'il n'y en a pas)`,
