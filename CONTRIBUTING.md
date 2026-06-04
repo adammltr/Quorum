@@ -1,165 +1,165 @@
-# Contribuer à Quorum
+# Contributing to Quorum
 
-Merci de l'intérêt. Ce guide couvre tout ce qu'il faut pour contribuer correctement.
+Thanks for your interest. This guide covers everything you need to contribute properly.
 
 ---
 
-## Prérequis
+## Prerequisites
 
 - **Node.js** ≥ 20 LTS
 - **pnpm** ≥ 9 (`npm install -g pnpm`)
 - **Supabase CLI** (`npm install -g supabase`)
-- **gitleaks** (voir section Sécurité ci-dessous)
-- Un compte [OpenRouter](https://openrouter.ai/) (gratuit) et un compte [Supabase](https://supabase.com/) (gratuit)
+- **gitleaks** (see the Security section below)
+- An [OpenRouter](https://openrouter.ai/) account (free) and a [Supabase](https://supabase.com/) account (free)
 
 ---
 
-## Installation locale
+## Local setup
 
 ```bash
 git clone https://github.com/adammltr/Quorum.git
 cd Quorum
 
-# Copie les variables d'environnement
+# Copy the environment variables
 cp .env.example .env.local
-# Édite .env.local avec tes vraies clés (voir commentaires dans .env.example)
+# Edit .env.local with your real keys (see comments in .env.example)
 
-# Installe les dépendances
+# Install dependencies
 pnpm install
 
-# Lance Supabase en local (Docker requis)
+# Start Supabase locally (Docker required)
 supabase start
 
-# Lance le dev server
+# Start the dev server
 pnpm dev
 ```
 
 ---
 
-## Workflow de contribution
+## Contribution workflow
 
-1. **Fork** le repo et crée une branche depuis `main` :
+1. **Fork** the repo and create a branch off `main`:
    ```bash
-   git checkout -b feat/ma-feature
-   # ou
-   git checkout -b fix/mon-bug
+   git checkout -b feat/my-feature
+   # or
+   git checkout -b fix/my-bug
    ```
 
-2. **Lis `docs/SPEC.md` et `docs/DESIGN.md`** avant de coder quoi que ce soit de visible.
+2. **Read `docs/SPEC.md` and `docs/DESIGN.md`** before writing anything user-visible.
 
-3. **Code**, en respectant les règles de `CLAUDE.md`.
+3. **Write code**, following the rules in `CLAUDE.md`.
 
-4. Avant de pousser, vérifie le front (à la racine) :
+4. Before pushing, check the frontend (from the repo root):
    ```bash
-   pnpm typecheck   # zéro erreur TypeScript (tsc -b --noEmit)
-   pnpm lint        # zéro erreur ESLint
-   pnpm build       # build prod sans erreur (tsc -b && vite build)
+   pnpm typecheck   # zero TypeScript errors (tsc -b --noEmit)
+   pnpm lint        # zero ESLint errors
+   pnpm build       # production build with no errors (tsc -b && vite build)
    ```
 
-   Et, si tu as touché aux Edge Functions, depuis `supabase/functions/` :
+   And, if you touched the Edge Functions, from `supabase/functions/`:
    ```bash
-   deno task check  # type-check de council/index.ts
+   deno task check  # type-check council/index.ts
    deno task lint   # deno lint
-   deno task test   # tests Deno (_tests/)
+   deno task test   # Deno tests (_tests/)
    ```
 
-5. Ouvre une **Pull Request** vers `main` avec une description claire (quoi / pourquoi / comment tester).
+5. Open a **Pull Request** against `main` with a clear description (what / why / how to test).
 
 ---
 
-## Convention de commits
+## Commit convention
 
-Format : `type: description courte en français`
+Format: `type: short description`
 
-| Type | Usage |
+| Type | Use |
 |---|---|
-| `feat` | Nouvelle feature |
-| `fix` | Correction de bug |
-| `chore` | Maintenance, dépendances |
-| `docs` | Documentation uniquement |
-| `style` | Formatage, CSS pur |
-| `refactor` | Refactoring sans changement de comportement |
-| `test` | Ajout ou correction de tests |
-| `perf` | Amélioration de performance |
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `chore` | Maintenance, dependencies |
+| `docs` | Documentation only |
+| `style` | Formatting, pure CSS |
+| `refactor` | Refactoring with no behavior change |
+| `test` | Adding or fixing tests |
+| `perf` | Performance improvement |
 
-Exemples :
+Examples:
 ```
-feat: ajout du peer-review anonymisé (stage 2)
-fix: correction du timeout sur les modèles :free
-docs: mise à jour de la spec BYOK
+feat: add anonymized peer-review (stage 2)
+fix: handle timeout on :free models
+docs: update the BYOK spec
 ```
 
 ---
 
-## Sécurité — Anti-leak de secrets avec gitleaks
+## Security — Secret-leak prevention with gitleaks
 
-Quorum utilise [gitleaks](https://github.com/gitleaks/gitleaks) pour **bloquer tout commit contenant un secret** (clé API, token, mot de passe).
+Quorum uses [gitleaks](https://github.com/gitleaks/gitleaks) to **block any commit containing a secret** (API key, token, password).
 
-### 1. Installer gitleaks
+### 1. Install gitleaks
 
-**macOS** :
+**macOS**:
 ```bash
 brew install gitleaks
 ```
 
-**Windows** (Scoop) :
+**Windows** (Scoop):
 ```bash
 scoop install gitleaks
 ```
 
-**Linux** :
+**Linux**:
 ```bash
-# Via le binaire GitHub Releases
+# Via the GitHub Releases binary
 curl -sSfL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_x64.tar.gz | tar -xz
 sudo mv gitleaks /usr/local/bin/
 ```
 
-**Vérifier l'installation** :
+**Verify the installation**:
 ```bash
 gitleaks version
 ```
 
-### 2. Activer le hook pre-commit
+### 2. Enable the pre-commit hook
 
-Après `git clone`, configure git pour utiliser les hooks du repo :
+After `git clone`, configure git to use the repo's hooks:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-⚠️ **Cette commande est à faire une seule fois** après chaque `git clone`. Elle pointe git vers `.githooks/pre-commit` qui lance gitleaks avant chaque commit.
+⚠️ **Run this command once** after each `git clone`. It points git at `.githooks/pre-commit`, which runs gitleaks before every commit.
 
-### 3. Tester le hook
+### 3. Test the hook
 
 ```bash
-# Simule un scan sans commiter
+# Run a scan without committing
 gitleaks detect --config .gitleaks.toml --source . --verbose
 ```
 
-Si gitleaks trouve un secret, il affiche la ligne concernée et **bloque le commit**. Retire le secret, utilise une variable d'environnement à la place, et recommite.
+If gitleaks finds a secret, it prints the offending line and **blocks the commit**. Remove the secret, use an environment variable instead, and commit again.
 
-### 4. Le hook est aussi dans GitHub Actions
+### 4. The hook also runs in GitHub Actions
 
-Chaque push déclenche `.github/workflows/gitleaks.yml` qui scanne l'historique complet. Un secret poussé par accident sera détecté et le run échouera — **revoke la clé immédiatement** si ça arrive.
+Every push triggers `.github/workflows/gitleaks.yml`, which scans the full history. A secret pushed by accident will be detected and the run will fail — **revoke the key immediately** if that happens.
 
 ---
 
 ## Tests
 
-Les tests actuels couvrent la logique des Edge Functions (parsing du peer-review,
-agrégation Borda). Ils tournent avec Deno, depuis `supabase/functions/` :
+The current tests cover the Edge Functions logic (peer-review parsing, Borda
+aggregation). They run with Deno, from `supabase/functions/`:
 
 ```bash
 cd supabase/functions
-deno task test     # exécute _tests/ (ex. ranking_test.ts)
+deno task test     # runs _tests/ (e.g. ranking_test.ts)
 ```
 
-> Il n'y a pas encore de suite front (vitest) ni e2e (playwright) — c'est au
-> backlog (voir la roadmap du README). Les contributions sur ce front sont
-> bienvenues.
+> There is no frontend suite (vitest) or e2e suite (playwright) yet — it's on
+> the backlog (see the README roadmap). Contributions on this front are
+> welcome.
 
 ---
 
-## Signaler une faille de sécurité
+## Reporting a security vulnerability
 
-Voir [SECURITY.md](SECURITY.md).
+See [SECURITY.md](SECURITY.md).
