@@ -9,8 +9,6 @@
 <!-- DEMO GIF -->
 ![demo](docs/demo.gif)
 
-<sub>↑ Replace this with a real demo GIF — see <a href="#-recording-the-demo-gif">Recording the demo GIF</a></sub>
-
 <br/>
 
 [![Stars](https://img.shields.io/github/stars/adammltr/Quorum?style=social)](https://github.com/adammltr/Quorum/stargazers)
@@ -150,13 +148,19 @@ This is open-core: the full deliberation engine is AGPL-3.0 and self-hostable. P
 ## 🗺 Roadmap
 
 - [x] Parallel streaming · blind peer-review · Chairman verdict
-- [x] Question of the Day + auto-generator
-- [x] Open-core freemium (soft paywall, reverse-trial, abstract billing)
-- [ ] Shareable result pages + dynamic OG images (in progress)
-- [ ] Custom councils (pick your own 4 models)
+- [x] Shareable result pages + dynamic OG images
+- [x] Custom councils (pick your own 4 models)
+- [x] PWA manifest + theme-color
+- [x] Sidebar navigation + history
+- [x] Collections + personal councils
+- [x] Question of the Day (Wordle-style, auto-generated)
+- [x] Open-core freemium (soft paywall, BYOK, reverse trial)
+- [x] Multi-provider free tier (Groq + Gemini + Cerebras)
+- [x] Legal pages (Privacy Policy + Terms)
 - [ ] Full CI: typecheck + lint + build + e2e on every PR
-- [ ] PWA / offline history
+- [ ] Offline history
 - [ ] More aggregation methods beyond Borda
+- [ ] Docker compose one-liner for self-hosting
 
 See open [issues](https://github.com/adammltr/Quorum/issues) for the live picture.
 
@@ -192,15 +196,3 @@ If Quorum is useful to you, a ⭐ genuinely helps it reach more people.
 ## 📄 License
 
 [AGPL-3.0](LICENSE) © Adam Molitor and contributors. The network-copyleft clause means hosted forks must share their source too — by design, so the council stays open.
-
----
-
-## 🎬 Recording the demo GIF
-
-The `![demo](docs/demo.gif)` above is a placeholder. To record the real one:
-
-1. Run `pnpm dev`, open `http://localhost:5173`, and pick a punchy question.
-2. Grab [**LICEcap**](https://www.cockos.com/licecap/) (free, macOS/Windows). Set it to ~15 fps.
-3. Record a tight box around the council area, **< 15 seconds**: question submit → 4 cards streaming → **the Chairman verdict + consensus score landing**. End on the verdict — that's the payoff.
-4. Save as `docs/demo.gif`. Keep it under ~5 MB (trim length / shrink the capture window) so it loads fast on GitHub.
-5. Commit it — the README already points there.
