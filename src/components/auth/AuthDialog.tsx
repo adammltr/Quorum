@@ -110,7 +110,7 @@ function OtpInput({
     <div
       role="group"
       aria-label={`Code à ${OTP_LENGTH} chiffres`}
-      className="flex justify-between gap-2"
+      className="flex justify-center gap-3"
     >
       {digits.map((d, i) => (
         <input
@@ -132,7 +132,7 @@ function OtpInput({
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
           className={cn(
-            'h-12 w-full min-w-0 rounded-lg border bg-surface-raised text-center font-mono text-xl text-text',
+            'h-14 w-14 min-w-0 rounded-lg border bg-surface-raised text-center font-mono text-2xl text-text',
             'transition-colors focus:border-gold focus:ring-2 focus:ring-gold/30 focus:outline-none',
             invalid ? 'border-dissent/60' : d ? 'border-border-bright' : 'border-border',
           )}
@@ -221,7 +221,12 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in" />
         <Dialog.Content
-          className="glass-card fixed top-1/2 left-1/2 z-50 flex w-[min(26rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 p-6 shadow-2xl focus:outline-none"
+          className={cn(
+            'glass-card fixed top-1/2 left-1/2 z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col shadow-2xl focus:outline-none',
+            isOtp
+              ? 'w-[min(28rem,calc(100vw-2rem))] gap-6 p-8'
+              : 'w-[min(26rem,calc(100vw-2rem))] gap-5 p-6',
+          )}
           aria-describedby={undefined}
         >
           <div className="flex items-start justify-between gap-4">
@@ -229,10 +234,16 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
                 {isOtp ? 'Entre le code reçu par email' : 'Garder cette assemblée'}
               </Dialog.Title>
-              <p className="text-sm text-text-muted">
-                {isOtp
-                  ? <>Code envoyé à <span className="font-medium text-text">{view.email}</span>.</>
-                  : (reason ?? 'Crée ton compte pour retrouver tes délibérations, partout.')}
+              <p className={cn('text-text-muted', isOtp ? 'text-base' : 'text-sm')}>
+                {isOtp ? (
+                  <>
+                    Code envoyé à
+                    <br />
+                    <span className="font-semibold text-text">{view.email}</span>
+                  </>
+                ) : (
+                  reason ?? 'Crée ton compte pour retrouver tes délibérations, partout.'
+                )}
               </p>
             </div>
             <Dialog.Close asChild>
@@ -244,7 +255,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
 
           {isOtp ? (
             // ── Écran 2 : saisie du code OTP ──
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               <OtpInput
                 value={code}
                 onChange={setCode}
@@ -269,7 +280,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
               <Button
                 type="button"
                 size="lg"
-                className="w-full"
+                className="mt-6 h-12 w-full text-base"
                 disabled={busy || code.length !== OTP_LENGTH}
                 onClick={() => void handleVerify(code)}
               >
@@ -286,7 +297,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                 )}
               </Button>
 
-              <div className="flex items-center justify-between text-xs text-text-subtle">
+              <div className="mt-4 flex items-center justify-between px-1 text-sm text-text-subtle">
                 <button
                   type="button"
                   onClick={backToEmail}
