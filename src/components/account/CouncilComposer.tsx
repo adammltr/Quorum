@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ModelSelect } from './ModelSelect'
+import { AuthDialog } from '@/components/auth/AuthDialog'
 import { usePaywall } from '@/components/billing/use-paywall'
+import { useAuth } from '@/components/auth/use-auth'
 import { slotAccent } from '@/components/council/slots'
+import { cn } from '@/lib/utils'
 import { COUNCIL_SLOTS, FREE_MODELS, modelLabel } from '@/lib/models-catalog'
 import type { CouncilDraft, CouncilRecord } from '@/lib/account'
 import type { Delegate } from '@/lib/db-helpers'
@@ -41,7 +44,9 @@ export function CouncilComposer({
   const [chairman, setChairman] = useState(initial?.chairman_model ?? FREE_MODELS[0]!.id)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
   const { openPaywall } = usePaywall()
+  const { isAuthenticated } = useAuth()
 
   const setSlotModel = (slot: string, modelId: string) => {
     setDelegates((prev) =>
@@ -89,6 +94,23 @@ export function CouncilComposer({
           </div>
 
           <form onSubmit={submit} className="flex flex-col gap-5">
+            {/* Gating : composer/sauvegarder une assemblée requiert un compte. */}
+            {!isAuthenticated && (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3">
+                <p className="text-sm text-text">
+                  🔐 Connecte-toi pour composer et sauvegarder tes assemblées
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setAuthOpen(true)}
+                  className="text-sm font-medium text-gold underline-offset-4 hover:underline"
+                >
+                  Se connecter
+                </button>
+              </div>
+            )}
+
+            <div className={cn('flex flex-col gap-5', !isAuthenticated && 'pointer-events-none opacity-50')}>
             <div className="flex flex-col gap-2">
               <label htmlFor="council-name" className="font-mono text-xs tracking-wide text-text-muted uppercase">
                 Nom
@@ -96,6 +118,7 @@ export function CouncilComposer({
               <Input
                 id="council-name"
                 autoFocus
+                disabled={!isAuthenticated}
                 placeholder="ex. « Les Stratèges »"
                 maxLength={80}
                 value={name}
@@ -111,6 +134,7 @@ export function CouncilComposer({
                 id="council-desc"
                 rows={2}
                 maxLength={280}
+                disabled={!isAuthenticated}
                 placeholder="Quel tempérament pour cette assemblée ?"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -149,8 +173,9 @@ export function CouncilComposer({
               </span>
               <ModelSelect value={chairman} onChange={setChairman} isPro={isPro} label="Modèle Chairman" />
             </div>
+            </div>
 
-            {!isPro && (
+            {isAuthenticated && !isPro && (
               <p className="text-xs text-text-subtle">
                 Les modèles premium sont réservés au plan PRO. En gratuit, compose avec les modèles
                 ouverts —{' '}
@@ -176,13 +201,18 @@ export function CouncilComposer({
                   Annuler
                 </Button>
               </Dialog.Close>
-              <Button type="submit" disabled={busy || !name.trim()}>
-                {initial && !initial.is_preset ? 'Enregistrer' : 'Créer le council'}
+              <Button type="submit" disabled={busy || !name.trim() || !isAuthenticated}>
+                {!isAuthenticated
+                  ? 'Connexion requise'
+                  : initial && !initial.is_preset
+                    ? 'Enregistrer'
+                    : 'Créer le council'}
               </Button>
             </div>
           </form>
         </Dialog.Content>
       </Dialog.Portal>
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </Dialog.Root>
   )
 }
