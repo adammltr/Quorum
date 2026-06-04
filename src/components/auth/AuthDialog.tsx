@@ -132,7 +132,7 @@ function OtpInput({
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
           className={cn(
-            'h-14 w-full min-w-0 rounded-lg border bg-surface text-center font-mono text-2xl text-text',
+            'h-12 w-full min-w-0 rounded-lg border bg-surface-raised text-center font-mono text-xl text-text',
             'transition-colors focus:border-gold focus:ring-2 focus:ring-gold/30 focus:outline-none',
             invalid ? 'border-dissent/60' : d ? 'border-border-bright' : 'border-border',
           )}
@@ -227,11 +227,11 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
-                {isOtp ? 'Entre ton code' : 'Garder cette assemblée'}
+                {isOtp ? 'Entre le code reçu par email' : 'Garder cette assemblée'}
               </Dialog.Title>
               <p className="text-sm text-text-muted">
                 {isOtp
-                  ? <>Code à 6 chiffres envoyé à <span className="font-medium text-text">{view.email}</span>.</>
+                  ? <>Code envoyé à <span className="font-medium text-text">{view.email}</span>.</>
                   : (reason ?? 'Crée ton compte pour retrouver tes délibérations, partout.')}
               </p>
             </div>
@@ -281,7 +281,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                 ) : (
                   <>
                     <KeyRound aria-hidden="true" />
-                    Valider le code
+                    Valider
                   </>
                 )}
               </Button>
@@ -355,7 +355,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
                   ) : (
                     <>
                       <Mail aria-hidden="true" />
-                      Envoyer le code
+                      Recevoir le code
                     </>
                   )}
                 </Button>

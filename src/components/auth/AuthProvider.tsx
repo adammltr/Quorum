@@ -112,24 +112,15 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     async (email: string): Promise<MagicLinkResult> => {
       const trimmed = email.trim()
       if (!configured) {
-        return { ok: false, mode: 'convert', message: 'Authentification indisponible en mode démo.' }
+        return { ok: false, mode: 'signin', message: 'Authentification indisponible en mode démo.' }
       }
       const client = await getClient()
       const emailRedirectTo = `${appUrl()}/`
 
-      // Session anonyme → on RATTACHE l'email (même auth.uid, données préservées).
-      if (user?.is_anonymous) {
-        const { error } = await client.auth.updateUser({ email })
-        if (!error) {
-          track('signup_intent', { source: 'magic_link', method: 'convert' })
-          return { ok: true, mode: 'convert' }
-        }
-        // Email déjà rattaché à un compte : on bascule sur une connexion classique.
-        const taken = /registered|already|exist/i.test(error.message)
-        if (!taken) return { ok: false, mode: 'convert', message: error.message }
-      }
-
-      // Compte existant (autre appareil, ou email déjà pris) → lien de connexion.
+      // Toujours un code OTP (signInWithOtp), JAMAIS updateUser : ce dernier
+      // déclenche l'email « Confirm your new email address » (flow email_change)
+      // au lieu d'un code à 6 chiffres. Pour une session anonyme active, Supabase
+      // rattache l'identité au même auth.uid à la vérification — données préservées.
       const { error } = await client.auth.signInWithOtp({
         email: trimmed,
         options: { emailRedirectTo, shouldCreateUser: true },
@@ -138,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       track('signup_intent', { source: 'magic_link', method: 'signin' })
       return { ok: true, mode: 'signin' }
     },
-    [configured, user, getClient],
+    [configured, getClient],
   )
 
   const verifyOtp = useCallback(
@@ -150,22 +141,13 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       const trimmedEmail = email.trim()
       const trimmedToken = token.trim()
 
-      // `email` couvre la connexion / création de compte. En rattachement d'une
-      // session anonyme (updateUser), le jeton est de type `email_change` :
-      // on bascule dessus en repli si le premier essai échoue.
-      let { error } = await client.auth.verifyOtp({
+      // Jeton de type `email` (signInWithOtp) : connexion, création de compte
+      // ou rattachement d'une session anonyme — tous couverts par ce type.
+      const { error } = await client.auth.verifyOtp({
         email: trimmedEmail,
         token: trimmedToken,
         type: 'email',
       })
-      if (error) {
-        const alt = await client.auth.verifyOtp({
-          email: trimmedEmail,
-          token: trimmedToken,
-          type: 'email_change',
-        })
-        error = alt.error
-      }
       if (error) return { ok: false, message: error.message }
 
       // La session est établie : l'écouteur onAuthStateChange mettra à jour
