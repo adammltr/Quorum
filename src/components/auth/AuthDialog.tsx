@@ -225,7 +225,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
             'glass-card fixed top-1/2 left-1/2 z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col shadow-2xl focus:outline-none',
             isOtp
               ? 'w-[min(28rem,calc(100vw-2rem))] gap-6 p-8'
-              : 'w-[min(26rem,calc(100vw-2rem))] gap-5 p-6',
+              : 'w-[min(28rem,calc(100vw-2rem))] gap-5 p-6',
           )}
           aria-describedby={undefined}
         >
@@ -323,7 +323,7 @@ export function AuthDialog({ open, onOpenChange, reason }: AuthDialogProps): Rea
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full"
+                className="h-12 w-full text-base"
                 disabled={!configured}
                 onClick={() => void signInWithGoogle()}
               >

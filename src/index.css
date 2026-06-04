@@ -5,6 +5,16 @@
 /* La variante `dark:` est pilotée par la classe .dark sur <html> (défaut). */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Masque la scrollbar tout en gardant le scroll (tabs horizontales mobiles). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ════════════════════════════════════════════════════════════════════
    Mapping Tailwind v4 (CSS-first). `inline` → les utilitaires référencent
    directement les variables runtime, donc le thème clair/sombre bascule

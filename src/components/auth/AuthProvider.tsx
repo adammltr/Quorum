@@ -166,7 +166,10 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const signInWithGoogle = useCallback(async () => {
     if (!configured) return
     const client = await getClient()
-    const redirectTo = `${appUrl()}/`
+    // OAuth : on revient TOUJOURS sur l'origine exacte d'où part l'utilisateur
+    // (preview Vercel, mobile, localhost…). Un appUrl() codé/figé provoquerait un
+    // redirect vers une origine tierce → écran noir post-callback.
+    const redirectTo = `${window.location.origin}/`
     track('signup_intent', { source: 'oauth_google' })
 
     // Anonyme → rattacher l'identité Google (préserve les données).

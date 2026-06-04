@@ -203,7 +203,10 @@ export function AssemblyAura({ isRunning = false }: AssemblyAuraProps): ReactNod
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      className="pointer-events-none fixed inset-0 -z-10 w-full"
+      // height: 100vh + GPU layer (translateZ) — évite sur iOS la « ligne » de
+      // séparation entre l'aura ambre et le fond noir (rastérisation à part).
+      style={{ height: '100vh', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
     />
   )
 }

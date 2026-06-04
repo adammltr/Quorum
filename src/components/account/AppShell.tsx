@@ -65,17 +65,20 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
 
       <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-8 px-6 pb-16 lg:px-10">
         <div className="flex flex-col gap-6 pt-2">
-          <nav className="flex items-center gap-1" aria-label="Espaces du compte">
+          <nav
+            className="-mx-4 flex items-center gap-1 overflow-x-auto scroll-smooth scrollbar-none px-4"
+            aria-label="Espaces du compte"
+          >
             {NAV.map(({ to, label, icon: Icon, gated }) => {
               const locked = gated && !isAuthenticated
               if (locked) {
                 return (
-                  <div key={to} className="relative">
+                  <div key={to} className="relative shrink-0">
                     <button
                       type="button"
                       onClick={() => showLockedHint(to)}
                       aria-disabled="true"
-                      className="inline-flex cursor-not-allowed items-center gap-2 rounded-full px-3.5 py-1.5 text-sm text-text-muted opacity-40 transition-colors"
+                      className="inline-flex cursor-not-allowed items-center gap-2 rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap text-text-muted opacity-40 transition-colors"
                     >
                       <Icon aria-hidden="true" className="size-4" />
                       {label}
@@ -97,7 +100,7 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps): 
                   to={to}
                   className={({ isActive }) =>
                     cn(
-                      'inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm transition-colors',
+                      'inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors',
                       isActive
                         ? 'bg-surface-raised text-text ring-1 ring-border'
                         : 'text-text-muted hover:text-text',
