@@ -3,7 +3,7 @@ import { useReducedMotion } from 'motion/react'
 import { CornerDownLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { SEED_QUESTIONS, otherSuggestions } from '@/lib/seed-questions'
+import { SEED_QUESTIONS, pickSuggestions } from '@/lib/seed-questions'
 
 interface QuestionComposerProps {
   onSubmit: (question: string) => void
@@ -29,6 +29,8 @@ export function QuestionComposer({
   const [value, setValue] = useState('')
   const [focused, setFocused] = useState(false)
   const [typed, setTyped] = useState('')
+  // 3 suggestions tirées au hasard à l'ouverture, stables pour la session.
+  const [suggestionPool] = useState(() => pickSuggestions(3))
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const isHero = variant === 'hero'
@@ -83,7 +85,7 @@ export function QuestionComposer({
     }
   }
 
-  const suggestions = isHero ? otherSuggestions(value) : []
+  const suggestions = isHero ? suggestionPool : []
   const fieldText = isHero ? 'text-base leading-normal lg:text-lg' : 'text-base leading-normal'
 
   return (

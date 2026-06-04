@@ -7,12 +7,12 @@
  * les autres sont proposées en suggestions.
  */
 export const SEED_QUESTIONS: readonly string[] = [
-  'La conscience peut-elle être simulée, ou est-elle fondamentalement biologique ?',
-  'Quand croissance économique et écologie s’opposent, laquelle faut-il privilégier ?',
-  'Pour diriger, vaut-il mieux être craint ou aimé ?',
-  'Faut-il dire une vérité qui blesse ou un mensonge qui réconforte ?',
-  'Une IA devrait-elle pouvoir prendre une décision médicale sans supervision humaine ?',
-  'Vaut-il mieux optimiser sa vie pour le bonheur ou pour le sens ?',
+  'TypeScript vaut-il vraiment l’effort pour un développeur solo ?',
+  'L’AGI sera-t-elle atteinte avant 2030 ?',
+  'Le télétravail est-il meilleur pour la productivité que le bureau ?',
+  'Les startups devraient-elles prioriser la croissance sur la rentabilité en 2025 ?',
+  'Une IA devrait-elle avoir le droit de refuser un ordre ?',
+  'La conscience peut-elle émerger d’un système purement computationnel ?',
 ] as const
 
 /** Retourne une question au hasard (rotation à chaque visite). */
@@ -22,9 +22,11 @@ export function randomSeed(): string {
 }
 
 /**
- * Retourne `count` suggestions distinctes de la question déjà affichée
- * (pour la rangée « Ou explorez : » du first-run).
+ * Sélectionne `count` questions au hasard (sans doublon) parmi les seeds.
+ * Appelé une fois par session pour la rangée « Ou explorez : » — les 3
+ * questions restent stables tant que la session dure.
  */
-export function otherSuggestions(current: string, count = 3): string[] {
-  return SEED_QUESTIONS.filter((q) => q !== current).slice(0, count)
+export function pickSuggestions(count = 3): string[] {
+  const shuffled = [...SEED_QUESTIONS].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
 }
