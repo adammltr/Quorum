@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { AccountPopover } from '@/components/layout/AccountPopover'
 import { SidebarToggle } from '@/components/layout/SidebarToggle'
 import { FadeIn } from '@/components/primitives'
+import { AssemblyAura } from '@/components/ui/AssemblyAura'
 import { getCouncil, councilMode, type CouncilRecord } from '@/lib/account'
 import { QuestionComposer } from './QuestionComposer'
 import { CouncilAssembly } from './CouncilAssembly'
@@ -153,10 +154,8 @@ export function CouncilStage(): ReactNode {
 
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden">
-      {/* Atmosphère — lueur ambre discrète, non décorative */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-1/4 left-1/2 h-[55vh] w-[80vw] max-w-[60rem] -translate-x-1/2 rounded-full bg-gold-dim blur-[140px] lg:h-[65vh] lg:max-w-[80rem] xl:max-w-[96rem]" />
-      </div>
+      {/* Atmosphère signature — 4 orbes (les délégués de l'assemblée) */}
+      <AssemblyAura isRunning={phase !== 'idle'} />
 
       {/* Barre supérieure — la marque et la navigation vivent dans la sidebar */}
       <header className="flex items-center justify-between px-6 py-5 lg:px-10">
