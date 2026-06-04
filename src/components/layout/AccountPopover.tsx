@@ -39,14 +39,24 @@ export function AccountPopover({ variant, side = 'top' }: AccountPopoverProps): 
   }
 
   if (!isAuthenticated) {
+    // Sidebar (full) : bouton gold pleine largeur. Navbar (avatar) : outline compact.
+    if (variant === 'full') {
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => setAuthOpen(true)}
+            className="w-full rounded-lg bg-gold px-3 py-2 text-sm font-medium text-[oklch(18%_0.03_70)] transition-colors hover:bg-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Se connecter
+          </button>
+          <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+        </>
+      )
+    }
     return (
       <>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setAuthOpen(true)}
-          className={variant === 'full' ? 'w-full' : undefined}
-        >
+        <Button variant="outline" size="sm" onClick={() => setAuthOpen(true)}>
           Se connecter
         </Button>
         <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />

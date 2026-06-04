@@ -5,6 +5,7 @@ import {
   Calendar,
   Clock,
   FolderOpen,
+  Lock,
   MoreHorizontal,
   PenLine,
   Pin,
@@ -18,6 +19,8 @@ import { createShare, shareUrl, copyToClipboard } from '@/lib/share'
 import { track } from '@/lib/analytics'
 import type { HistoryItem } from '@/lib/account'
 import { useSidebarRuns } from '@/hooks/useSidebarRuns'
+import { useAuth } from '@/components/auth/use-auth'
+import { AuthDialog } from '@/components/auth/AuthDialog'
 import { useSidebar } from './use-sidebar'
 import { SidebarToggle } from './SidebarToggle'
 import { AccountPopover } from './AccountPopover'
@@ -156,8 +159,10 @@ function SectionTitle({ children }: { children: ReactNode }): ReactNode {
  */
 export function Sidebar(): ReactNode {
   const { open, isMobile, newQuestion } = useSidebar()
+  const { isAuthenticated } = useAuth()
   const { pinned, recent, enabled, togglePin, remove } = useSidebarRuns()
   const [busy, setBusy] = useState<string | null>(null)
+  const [authOpen, setAuthOpen] = useState(false)
 
   const handleTogglePin = (item: HistoryItem) => {
     setBusy(item.id)
@@ -204,64 +209,89 @@ export function Sidebar(): ReactNode {
           </button>
         </div>
 
-        {/* ── Navigation ── */}
+        {/* ── Navigation (publique : Nouvelle question + Question du Jour) ── */}
         <nav className="flex flex-col gap-0.5 px-3">
           <NavLink to="/jour" className={navItemClass}>
             <Calendar aria-hidden="true" className="size-4" />
             Question du Jour
           </NavLink>
-          <div className="my-1.5 h-px bg-border" />
-          {NAV_SECONDARY.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={navItemClass}>
-              <Icon aria-hidden="true" className="size-4" />
-              {label}
-            </NavLink>
-          ))}
+          {/* Historique / Collections / Councils : réservés au compte connecté */}
+          {isAuthenticated && (
+            <>
+              <div className="my-1.5 h-px bg-border" />
+              {NAV_SECONDARY.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to} className={navItemClass}>
+                  <Icon aria-hidden="true" className="size-4" />
+                  {label}
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
 
-        {/* ── Listes (épinglés + récents), zone scrollable ── */}
-        <div className="sidebar-scroll mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
-          {enabled && pinned.length > 0 && (
-            <section className="flex flex-col gap-0.5">
-              <SectionTitle>Épinglés</SectionTitle>
-              {pinned.map((item) => (
-                <RunItem
-                  key={item.id}
-                  item={item}
-                  onTogglePin={handleTogglePin}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </section>
-          )}
-
-          <section className="flex flex-col gap-0.5">
-            <SectionTitle>Récent</SectionTitle>
-            {!enabled ? (
-              <p className="px-3 py-2 text-sm text-text-subtle">
-                Connecte-toi pour voir ton historique.
-              </p>
-            ) : recent.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-text-subtle">Aucune délibération pour l’instant.</p>
-            ) : (
-              recent.map((item) => (
-                <RunItem
-                  key={item.id}
-                  item={item}
-                  onTogglePin={handleTogglePin}
-                  onRemove={handleRemove}
-                />
-              ))
+        {isAuthenticated ? (
+          /* ── Listes (épinglés + récents), zone scrollable ── */
+          <div className="sidebar-scroll mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
+            {enabled && pinned.length > 0 && (
+              <section className="flex flex-col gap-0.5">
+                <SectionTitle>Épinglés</SectionTitle>
+                {pinned.map((item) => (
+                  <RunItem
+                    key={item.id}
+                    item={item}
+                    onTogglePin={handleTogglePin}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </section>
             )}
-          </section>
-          {busy && <span className="sr-only" aria-live="polite">Mise à jour…</span>}
-        </div>
+
+            <section className="flex flex-col gap-0.5">
+              <SectionTitle>Récent</SectionTitle>
+              {recent.length === 0 ? (
+                <p className="px-3 py-2 text-sm text-text-subtle">
+                  Aucune délibération pour l’instant.
+                </p>
+              ) : (
+                recent.map((item) => (
+                  <RunItem
+                    key={item.id}
+                    item={item}
+                    onTogglePin={handleTogglePin}
+                    onRemove={handleRemove}
+                  />
+                ))
+              )}
+            </section>
+            {busy && <span className="sr-only" aria-live="polite">Mise à jour…</span>}
+          </div>
+        ) : (
+          /* ── Anonyme : invitation à créer un compte ── */
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+            <Lock aria-hidden="true" className="size-6 text-gold" />
+            <p className="text-sm text-text-muted">
+              Ton historique et tes collections t’attendent
+            </p>
+            <p className="text-xs text-text-subtle">
+              Crée un compte gratuit pour retrouver toutes tes délibérations.
+            </p>
+            <button
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              className="mt-1 w-full rounded-lg bg-gold px-3 py-2 text-sm font-medium text-[oklch(18%_0.03_70)] transition-colors hover:bg-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Se connecter
+            </button>
+          </div>
+        )}
 
         {/* ── Bas : compte ── */}
         <div className="border-t border-border p-2">
           <AccountPopover variant="full" side="top" />
         </div>
       </div>
+
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </aside>
   )
 }
