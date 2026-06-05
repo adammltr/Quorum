@@ -125,7 +125,11 @@ const fr: typeof en = {
   },
 
   modelCard: {
-    unavailable: 'Modèle indisponible',
+    streaming: 'en cours',
+    timeout: 'délai dépassé',
+    unavailable: 'indisponible',
+    failedBody: 'Ce modèle n’a pas pu répondre. L’assemblée poursuit avec les autres.',
+    slowHint: 'Les modèles gratuits prennent parfois leur temps — la qualité vaut le détour.',
   },
 
   auth: {
@@ -317,6 +321,63 @@ const fr: typeof en = {
     alreadyAnswered: 'Vous avez déjà répondu aujourd’hui — vous pouvez recommencer.',
     archiveDay: 'Question d’archive · {{date}}',
     errorFallback: 'Question du jour indisponible.',
+  },
+
+  notFound: {
+    eyebrow: 'Erreur 404',
+    title: 'L’assemblée ne siège pas ici.',
+    body: 'Cette page n’existe pas — ou la délibération s’est déjà dissoute.',
+    back: 'Revenir à l’assemblée',
+  },
+
+  errorBoundary: {
+    chunkEyebrow: 'Mise à jour disponible',
+    crashEyebrow: 'Imprévu',
+    chunkTitle: 'Une nouvelle version est en ligne.',
+    crashTitle: 'L’assemblée a été interrompue.',
+    chunkBody: 'Rechargez la page pour reprendre — vos données ne sont pas perdues.',
+    crashBody: 'Une erreur inattendue est survenue. Rechargez pour repartir d’une base saine.',
+    reload: 'Recharger la page',
+  },
+
+  share: {
+    shareVerdict: 'Partager le verdict',
+    share: 'Partager',
+    title: 'Partager cette délibération',
+    subtitle: 'Une page publique propre, gratuite et illimitée.',
+    percentConsensus: '% de consensus',
+    errorMessage: 'Impossible de créer le lien. Réessayer ?',
+    shareText: 'Texte de partage',
+    copied: 'Copié',
+    copy: 'Copier',
+    shareOnX: 'Partager sur X',
+    textCopied: 'Texte copié',
+    copyText: 'Copier le texte',
+    more: 'Plus…',
+    preparing: 'Préparation du lien public…',
+  },
+
+  councilComposer: {
+    editTitle: 'Modifier le council',
+    createTitle: 'Composer un council',
+    subtitle: 'Quatre délégués délibèrent, un Chairman tranche.',
+    nameLabel: 'Nom',
+    namePlaceholder: 'ex. « Les Stratèges »',
+    intentionLabel: 'Intention',
+    optional: '(optionnelle)',
+    intentionPlaceholder: 'Quel tempérament pour cette assemblée ?',
+    delegates: 'Délégués',
+    delegateModelLabel: 'Modèle du délégué {{slot}}',
+    chairmanHint: '— la synthèse finale',
+    chairmanModelLabel: 'Modèle Chairman',
+    premiumNote:
+      'Les modèles premium sont réservés au plan PRO. En gratuit, compose avec les modèles ouverts —',
+    discoverPro: 'découvrir PRO',
+    signInRequired: 'Connexion requise',
+    save: 'Enregistrer',
+    create: 'Créer le council',
+    saveFailed: 'Enregistrement impossible.',
+    copySuffix: ' (copie)',
   },
 }
 

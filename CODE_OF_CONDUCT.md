@@ -1,43 +1,53 @@
-# Code de conduite — Contributor Covenant
+## Code of Conduct
 
-## Notre engagement
+### Our Pledge
 
-Dans l'intérêt de favoriser un environnement ouvert et accueillant, nous, en tant que contributeurs et mainteneurs, nous engageons à faire de la participation à notre projet et à notre communauté une expérience sans harcèlement pour tout le monde, quel que soit l'âge, la taille corporelle, le handicap, l'origine ethnique, les caractéristiques sexuelles, l'identité et l'expression de genre, le niveau d'expérience, l'éducation, le statut socio-économique, la nationalité, l'apparence personnelle, la race, la religion, ou l'identité et l'orientation sexuelle.
+We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
 
-## Nos standards
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-Exemples de comportements qui contribuent à créer un environnement positif :
+### Our Standards
 
-- Utiliser un langage accueillant et inclusif
-- Respecter les différents points de vue et expériences
-- Accepter gracieusement les critiques constructives
-- Se concentrer sur ce qui est le mieux pour la communauté
-- Faire preuve d'empathie envers les autres membres de la communauté
+Examples of behavior that contributes to a positive environment for our community include:
 
-Exemples de comportements inacceptables :
+- Demonstrating empathy and kindness toward other people
+- Being respectful of differing opinions, viewpoints, and experiences
+- Giving and gracefully accepting constructive feedback
+- Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
+- Focusing on what is best not just for us as individuals, but for the overall community
 
-- L'utilisation de langage ou d'imagerie à connotation sexuelle et les avances sexuelles non sollicitées
-- Le trolling, les commentaires insultants/dérogatoires, et les attaques personnelles ou politiques
-- Le harcèlement public ou privé
-- La publication d'informations privées d'autrui, telles que des informations physiques ou électroniques, sans permission explicite
-- Toute autre conduite qui pourrait raisonnablement être considérée comme inappropriée dans un cadre professionnel
+Examples of unacceptable behavior include:
 
-## Nos responsabilités
+- The use of sexualized language or imagery, and sexual attention or advances of any kind
+- Trolling, insulting or derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others’ private information, such as a physical or email address, without their explicit permission
+- Other conduct which could reasonably be considered inappropriate in a professional setting
 
-Les mainteneurs du projet ont la responsabilité de clarifier les standards de comportement acceptable et sont censés prendre des mesures correctives appropriées et équitables en réponse à tout comportement inacceptable.
+### Enforcement Responsibilities
 
-Les mainteneurs ont le droit et la responsabilité de supprimer, modifier ou rejeter les commentaires, commits, code, éditions de wiki, issues et autres contributions qui ne respectent pas ce Code de conduite, ou de bannir temporairement ou définitivement tout contributeur pour d'autres comportements qu'ils jugent inappropriés, menaçants, offensants ou nuisibles.
+Project maintainers are responsible for clarifying and enforcing our standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful.
 
-## Champ d'application
+Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
 
-Ce Code de conduite s'applique à la fois dans les espaces du projet et dans les espaces publics lorsqu'un individu représente le projet ou sa communauté. Les exemples de représentation d'un projet ou d'une communauté incluent l'utilisation d'une adresse e-mail officielle du projet, la publication via un compte de réseau social officiel, ou agir en tant que représentant désigné lors d'un événement en ligne ou hors ligne.
+### Scope
 
-## Application
+This Code of Conduct applies within all community spaces, and also applies when an individual is officially representing the community in public spaces. Examples of representing our community include using an official e-mail address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
 
-Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être signalés en contactant l'équipe du projet à **adammolitor2008@gmail.com**. Toutes les plaintes seront examinées et feront l'objet d'une enquête, et donneront lieu à une réponse jugée nécessaire et appropriée aux circonstances. L'équipe du projet est tenue de maintenir la confidentialité à l'égard du reporter d'un incident. Des détails supplémentaires sur les politiques d'application spécifiques peuvent être publiés séparément.
+### Enforcement
 
-Les mainteneurs qui ne suivent pas ou n'appliquent pas le Code de conduite de bonne foi peuvent faire face à des répercussions temporaires ou permanentes déterminées par d'autres membres de la direction du projet.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team responsible for enforcement at [adammolitor2008@gmail.com](mailto:adammolitor2008@gmail.com). All complaints will be reviewed and investigated promptly and fairly.
 
-## Attribution
+All project maintainers are obligated to respect the privacy and security of the reporter of any incident.
 
-Ce Code de conduite est adapté du [Contributor Covenant](https://www.contributor-covenant.org), version 2.1.
+Project maintainers who do not follow or enforce the Code of Conduct in good
+faith may face temporary or permanent repercussions as determined by other
+members of the project's leadership.
+
+### Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 2.1,
+available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct/][version]
+
+[homepage]: http://contributor-covenant.org
+[version]: https://www.contributor-covenant.org/version/2/1

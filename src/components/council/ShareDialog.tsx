@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Dialog } from 'radix-ui'
+import { useTranslation } from 'react-i18next'
 import { Check, Copy, Link2, Loader2, RotateCcw, Share2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { track } from '@/lib/analytics'
@@ -50,6 +51,7 @@ export function ShareDialog({
   borda,
   variant = 'primary',
 }: ShareDialogProps): ReactNode {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [state, setState] = useState<LoadState>({ kind: 'idle' })
   const [copied, setCopied] = useState<'link' | 'text' | null>(null)
@@ -71,9 +73,9 @@ export function ShareDialog({
     } catch (err) {
       // Le détail exact est déjà loggé dans createShare ; ici message présentable.
       console.error('[ShareDialog] création du lien échouée:', err)
-      setState({ kind: 'error', message: 'Impossible de créer le lien. Réessayer ?' })
+      setState({ kind: 'error', message: t('share.errorMessage') })
     }
-  }, [runId, question, consensusScore, grid])
+  }, [runId, question, consensusScore, grid, t])
 
   // Lance la création à la première ouverture (idempotente côté serveur). On
   // diffère via microtâche : le setState('loading') ne part pas du corps
@@ -116,12 +118,12 @@ export function ShareDialog({
             className="bg-gold text-[oklch(18%_0.03_70)] hover:bg-gold/90"
           >
             <Share2 aria-hidden="true" />
-            Partager le verdict
+            {t('share.shareVerdict')}
           </Button>
         ) : (
           <Button variant="outline" size="sm">
             <Share2 aria-hidden="true" />
-            Partager
+            {t('share.share')}
           </Button>
         )}
       </Dialog.Trigger>
@@ -135,14 +137,12 @@ export function ShareDialog({
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
-                Partager cette délibération
+                {t('share.title')}
               </Dialog.Title>
-              <p className="text-sm text-text-muted">
-                Une page publique propre, gratuite et illimitée.
-              </p>
+              <p className="text-sm text-text-muted">{t('share.subtitle')}</p>
             </div>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Fermer">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.close')}>
                 <X aria-hidden="true" />
               </Button>
             </Dialog.Close>
@@ -156,7 +156,7 @@ export function ShareDialog({
             />
             <div className="relative flex flex-col gap-3">
               <span className="font-mono text-xs tracking-wider text-gold uppercase">
-                Quorum · le consensus des intelligences
+                Quorum · {t('home.tagline')}
               </span>
               <p className="line-clamp-3 font-display text-lg leading-snug text-text">
                 {question}
@@ -173,7 +173,7 @@ export function ShareDialog({
                 </div>
                 {consensusScore !== null && (
                   <span className="font-mono text-sm text-text-muted">
-                    <span className="text-2xl text-text">{consensusScore}</span>% de consensus
+                    <span className="text-2xl text-text">{consensusScore}</span>{t('share.percentConsensus')}
                   </span>
                 )}
               </div>
@@ -188,7 +188,7 @@ export function ShareDialog({
               <p className="text-sm text-text">{state.message}</p>
               <Button variant="outline" size="sm" onClick={() => void loadShare()}>
                 <RotateCcw aria-hidden="true" />
-                Réessayer
+                {t('common.retry')}
               </Button>
             </div>
           ) : state.kind === 'ready' ? (
@@ -196,7 +196,7 @@ export function ShareDialog({
               {/* Texte pré-rempli — éditable visuellement, copiable */}
               <label className="flex flex-col gap-1.5">
                 <span className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                  Texte de partage
+                  {t('share.shareText')}
                 </span>
                 <textarea
                   readOnly
@@ -222,12 +222,12 @@ export function ShareDialog({
                   {copied === 'link' ? (
                     <>
                       <Check aria-hidden="true" className="text-consensus" />
-                      Copié
+                      {t('share.copied')}
                     </>
                   ) : (
                     <>
                       <Copy aria-hidden="true" />
-                      Copier
+                      {t('share.copy')}
                     </>
                   )}
                 </Button>
@@ -242,7 +242,7 @@ export function ShareDialog({
                     rel="noopener noreferrer"
                     onClick={() => track('share_channel', { channel: 'x' })}
                   >
-                    Partager sur X
+                    {t('share.shareOnX')}
                   </a>
                 </Button>
                 <Button variant="secondary" size="sm" asChild>
@@ -259,19 +259,19 @@ export function ShareDialog({
                   {copied === 'text' ? (
                     <>
                       <Check aria-hidden="true" className="text-consensus" />
-                      Texte copié
+                      {t('share.textCopied')}
                     </>
                   ) : (
                     <>
                       <Copy aria-hidden="true" />
-                      Copier le texte
+                      {t('share.copyText')}
                     </>
                   )}
                 </Button>
                 {canNativeShare() && (
                   <Button variant="secondary" size="sm" onClick={handleNative}>
                     <Share2 aria-hidden="true" />
-                    Plus…
+                    {t('share.more')}
                   </Button>
                 )}
               </div>
@@ -279,7 +279,7 @@ export function ShareDialog({
           ) : (
             <div className="flex items-center gap-2 py-4 text-sm text-text-muted">
               <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Préparation du lien public…
+              {t('share.preparing')}
             </div>
           )}
         </Dialog.Content>

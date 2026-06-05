@@ -121,7 +121,11 @@ const en = {
   },
 
   modelCard: {
-    unavailable: 'Model unavailable',
+    streaming: 'streaming',
+    timeout: 'timed out',
+    unavailable: 'unavailable',
+    failedBody: 'This model couldn’t respond. The assembly continues with the others.',
+    slowHint: 'Free models sometimes take their time — the quality is worth the wait.',
   },
 
   auth: {
@@ -311,6 +315,63 @@ const en = {
     alreadyAnswered: 'You’ve already answered today — you can start over.',
     archiveDay: 'Archive question · {{date}}',
     errorFallback: 'Question of the day unavailable.',
+  },
+
+  notFound: {
+    eyebrow: 'Error 404',
+    title: 'The assembly does not sit here.',
+    body: 'This page doesn’t exist — or the deliberation has already dissolved.',
+    back: 'Back to the assembly',
+  },
+
+  errorBoundary: {
+    chunkEyebrow: 'Update available',
+    crashEyebrow: 'Unexpected',
+    chunkTitle: 'A new version is live.',
+    crashTitle: 'The assembly was interrupted.',
+    chunkBody: 'Reload the page to resume — your data is not lost.',
+    crashBody: 'An unexpected error occurred. Reload to start from a clean slate.',
+    reload: 'Reload the page',
+  },
+
+  share: {
+    shareVerdict: 'Share the verdict',
+    share: 'Share',
+    title: 'Share this deliberation',
+    subtitle: 'A clean public page, free and unlimited.',
+    percentConsensus: '% consensus',
+    errorMessage: 'Couldn’t create the link. Retry?',
+    shareText: 'Share text',
+    copied: 'Copied',
+    copy: 'Copy',
+    shareOnX: 'Share on X',
+    textCopied: 'Text copied',
+    copyText: 'Copy text',
+    more: 'More…',
+    preparing: 'Preparing the public link…',
+  },
+
+  councilComposer: {
+    editTitle: 'Edit council',
+    createTitle: 'Compose a council',
+    subtitle: 'Four delegates deliberate, a Chairman decides.',
+    nameLabel: 'Name',
+    namePlaceholder: 'e.g. “The Strategists”',
+    intentionLabel: 'Intent',
+    optional: '(optional)',
+    intentionPlaceholder: 'What temperament for this assembly?',
+    delegates: 'Delegates',
+    delegateModelLabel: 'Model for delegate {{slot}}',
+    chairmanHint: '— the final synthesis',
+    chairmanModelLabel: 'Chairman model',
+    premiumNote:
+      'Premium models are reserved for the PRO plan. On the free plan, compose with the open models —',
+    discoverPro: 'discover PRO',
+    signInRequired: 'Sign-in required',
+    save: 'Save',
+    create: 'Create council',
+    saveFailed: 'Couldn’t save.',
+    copySuffix: ' (copy)',
   },
 }
 

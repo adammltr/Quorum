@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import i18n from '@/i18n'
 
 interface Props {
   children: ReactNode
@@ -41,6 +42,8 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!error) return this.props.children
 
     const chunk = isChunkLoadError(error)
+    // Classe → pas de hook : on lit l'instance i18n directement (écran ponctuel).
+    const t = i18n.t.bind(i18n)
     return (
       <main className="relative grid min-h-dvh place-items-center overflow-hidden px-6 text-center">
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
@@ -48,22 +51,20 @@ export class ErrorBoundary extends Component<Props, State> {
         </div>
         <div className="flex max-w-md flex-col items-center gap-5">
           <span className="font-mono text-sm tracking-wider text-gold uppercase">
-            {chunk ? 'Mise à jour disponible' : 'Imprévu'}
+            {chunk ? t('errorBoundary.chunkEyebrow') : t('errorBoundary.crashEyebrow')}
           </span>
           <h1 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-            {chunk ? 'Une nouvelle version est en ligne.' : 'L’assemblée a été interrompue.'}
+            {chunk ? t('errorBoundary.chunkTitle') : t('errorBoundary.crashTitle')}
           </h1>
           <p className="text-lg leading-relaxed text-text-muted">
-            {chunk
-              ? 'Rechargez la page pour reprendre — vos données ne sont pas perdues.'
-              : 'Une erreur inattendue est survenue. Rechargez pour repartir d’une base saine.'}
+            {chunk ? t('errorBoundary.chunkBody') : t('errorBoundary.crashBody')}
           </p>
           <button
             type="button"
             onClick={this.handleReload}
             className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            Recharger la page
+            {t('errorBoundary.reload')}
           </button>
         </div>
       </main>

@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Dialog } from 'radix-ui'
+import { useTranslation } from 'react-i18next'
 import { Crown, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,7 +39,10 @@ export function CouncilComposer({
   isPro,
   onSave,
 }: CouncilComposerProps): ReactNode {
-  const [name, setName] = useState(initial ? `${initial.name}${initial.is_preset ? ' (copie)' : ''}` : '')
+  const { t } = useTranslation()
+  const [name, setName] = useState(
+    initial ? `${initial.name}${initial.is_preset ? t('councilComposer.copySuffix') : ''}` : '',
+  )
   const [description, setDescription] = useState(initial?.description ?? '')
   const [delegates, setDelegates] = useState<Delegate[]>(initial?.delegates ?? defaultDelegates())
   const [chairman, setChairman] = useState(initial?.chairman_model ?? FREE_MODELS[0]!.id)
@@ -63,7 +67,7 @@ export function CouncilComposer({
       await onSave({ name, description, delegates, chairman_model: chairman })
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Enregistrement impossible.')
+      setError(err instanceof Error ? err.message : t('councilComposer.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -80,14 +84,12 @@ export function CouncilComposer({
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Dialog.Title className="font-display text-2xl leading-snug text-text">
-                {initial && !initial.is_preset ? 'Modifier le council' : 'Composer un council'}
+                {initial && !initial.is_preset ? t('councilComposer.editTitle') : t('councilComposer.createTitle')}
               </Dialog.Title>
-              <p className="text-sm text-text-muted">
-                Quatre délégués délibèrent, un Chairman tranche.
-              </p>
+              <p className="text-sm text-text-muted">{t('councilComposer.subtitle')}</p>
             </div>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Fermer">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.close')}>
                 <X aria-hidden="true" />
               </Button>
             </Dialog.Close>
@@ -98,14 +100,14 @@ export function CouncilComposer({
             {!isAuthenticated && (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3">
                 <p className="text-sm text-text">
-                  🔐 Connecte-toi pour composer et sauvegarder tes assemblées
+                  🔐 {t('councils.signInToCompose')}
                 </p>
                 <button
                   type="button"
                   onClick={() => setAuthOpen(true)}
                   className="text-sm font-medium text-gold underline-offset-4 hover:underline"
                 >
-                  Se connecter
+                  {t('nav.signIn')}
                 </button>
               </div>
             )}
@@ -113,13 +115,13 @@ export function CouncilComposer({
             <div className={cn('flex flex-col gap-5', !isAuthenticated && 'pointer-events-none opacity-50')}>
             <div className="flex flex-col gap-2">
               <label htmlFor="council-name" className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                Nom
+                {t('councilComposer.nameLabel')}
               </label>
               <Input
                 id="council-name"
                 autoFocus
                 disabled={!isAuthenticated}
-                placeholder="ex. « Les Stratèges »"
+                placeholder={t('councilComposer.namePlaceholder')}
                 maxLength={80}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -128,14 +130,14 @@ export function CouncilComposer({
 
             <div className="flex flex-col gap-2">
               <label htmlFor="council-desc" className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                Intention <span className="normal-case text-text-subtle">(optionnelle)</span>
+                {t('councilComposer.intentionLabel')} <span className="normal-case text-text-subtle">{t('councilComposer.optional')}</span>
               </label>
               <Textarea
                 id="council-desc"
                 rows={2}
                 maxLength={280}
                 disabled={!isAuthenticated}
-                placeholder="Quel tempérament pour cette assemblée ?"
+                placeholder={t('councilComposer.intentionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -143,7 +145,7 @@ export function CouncilComposer({
 
             <div className="flex flex-col gap-2.5">
               <span className="font-mono text-xs tracking-wide text-text-muted uppercase">
-                Délégués
+                {t('councilComposer.delegates')}
               </span>
               {delegates.map((d) => (
                 <div key={d.slot} className="flex items-center gap-3">
@@ -159,7 +161,7 @@ export function CouncilComposer({
                       value={d.model_id}
                       onChange={(m) => setSlotModel(d.slot, m)}
                       isPro={isPro}
-                      label={`Modèle du délégué ${d.slot}`}
+                      label={t('councilComposer.delegateModelLabel', { slot: d.slot })}
                     />
                   </div>
                 </div>
@@ -169,22 +171,21 @@ export function CouncilComposer({
             <div className="flex flex-col gap-2.5">
               <span className="flex items-center gap-1.5 font-mono text-xs tracking-wide text-text-muted uppercase">
                 <Crown aria-hidden="true" className="size-3.5 text-gold" />
-                Chairman <span className="normal-case text-text-subtle">— la synthèse finale</span>
+                Chairman <span className="normal-case text-text-subtle">{t('councilComposer.chairmanHint')}</span>
               </span>
-              <ModelSelect value={chairman} onChange={setChairman} isPro={isPro} label="Modèle Chairman" />
+              <ModelSelect value={chairman} onChange={setChairman} isPro={isPro} label={t('councilComposer.chairmanModelLabel')} />
             </div>
             </div>
 
             {isAuthenticated && !isPro && (
               <p className="text-xs text-text-subtle">
-                Les modèles premium sont réservés au plan PRO. En gratuit, compose avec les modèles
-                ouverts —{' '}
+                {t('councilComposer.premiumNote')}{' '}
                 <button
                   type="button"
                   onClick={() => openPaywall('premium_model')}
                   className="text-gold underline-offset-4 hover:underline"
                 >
-                  découvrir PRO
+                  {t('councilComposer.discoverPro')}
                 </button>
                 .
               </p>
@@ -198,15 +199,15 @@ export function CouncilComposer({
             <div className="flex items-center justify-end gap-2">
               <Dialog.Close asChild>
                 <Button type="button" variant="ghost">
-                  Annuler
+                  {t('common.cancel')}
                 </Button>
               </Dialog.Close>
               <Button type="submit" disabled={busy || !name.trim() || !isAuthenticated}>
                 {!isAuthenticated
-                  ? 'Connexion requise'
+                  ? t('councilComposer.signInRequired')
                   : initial && !initial.is_preset
-                    ? 'Enregistrer'
-                    : 'Créer le council'}
+                    ? t('councilComposer.save')
+                    : t('councilComposer.create')}
               </Button>
             </div>
           </form>

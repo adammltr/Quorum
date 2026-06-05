@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Fallback affiché pendant le chargement d'une route en code-split.
@@ -7,6 +8,7 @@ import { type ReactNode } from 'react'
  * prefers-reduced-motion (neutralisée via index.css).
  */
 export function RouteFallback(): ReactNode {
+  const { t } = useTranslation()
   return (
     <div
       className="grid min-h-dvh place-items-center bg-background"
@@ -14,7 +16,7 @@ export function RouteFallback(): ReactNode {
       aria-live="polite"
       aria-busy="true"
     >
-      <span className="sr-only">Chargement…</span>
+      <span className="sr-only">{t('common.loading')}</span>
       <span className="inline-flex items-center gap-1.5" aria-hidden="true">
         <span className="thinking-dot" style={{ animationDelay: '0ms' }} />
         <span className="thinking-dot" style={{ animationDelay: '160ms' }} />

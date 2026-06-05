@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -35,6 +36,7 @@ function mapPhase(status: string): SlotPhase {
 }
 
 export function RunResult(): ReactNode {
+  const { i18n } = useTranslation()
   const { runId } = useParams<{ runId: string }>()
   const compact = useMediaQuery('(max-width: 639px)')
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
@@ -172,7 +174,7 @@ export function RunResult(): ReactNode {
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex flex-col gap-2">
                 <span className="font-mono text-xs tracking-wider text-text-muted uppercase">
-                  Délibération de l’assemblée · {formatRelativeDate(bundle.run.created_at)}
+                  Délibération de l’assemblée · {formatRelativeDate(bundle.run.created_at, i18n.language)}
                 </span>
                 <h1 className="max-w-3xl font-display text-3xl leading-snug text-text sm:text-4xl">
                   {bundle.question}

@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Check, Clock } from 'lucide-react'
 import { GlassCard } from '@/components/primitives'
 import { cn } from '@/lib/utils'
@@ -12,6 +13,7 @@ const SKELETON_WIDTHS = ['92%', '98%', '85%', '70%', '90%', '55%'] as const
 const SLOW_HINT_MS = 6000
 
 function PendingBody({ slow }: { slow: boolean }): ReactNode {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2.5" aria-hidden="true">
@@ -20,9 +22,7 @@ function PendingBody({ slow }: { slow: boolean }): ReactNode {
         ))}
       </div>
       {slow && (
-        <p className="text-xs leading-relaxed text-text-subtle">
-          Les modèles gratuits prennent parfois leur temps — la qualité vaut le détour.
-        </p>
+        <p className="text-xs leading-relaxed text-text-subtle">{t('modelCard.slowHint')}</p>
       )}
     </div>
   )
@@ -40,6 +40,7 @@ interface ModelCardProps {
 }
 
 function StatusBadge({ model, accent }: { model: ModelState; accent: string }): ReactNode {
+  const { t } = useTranslation()
   const latency = fmtLatency(model.latencyMs)
   switch (model.phase) {
     case 'pending':
@@ -53,7 +54,7 @@ function StatusBadge({ model, accent }: { model: ModelState; accent: string }): 
     case 'streaming':
       return (
         <span className="font-mono text-xs tracking-wide" style={{ color: accent }}>
-          en cours
+          {t('modelCard.streaming')}
         </span>
       )
     case 'complete':
@@ -67,20 +68,21 @@ function StatusBadge({ model, accent }: { model: ModelState; accent: string }): 
       return (
         <span className="inline-flex items-center gap-1.5 font-mono text-xs text-text-subtle">
           <Clock aria-hidden="true" className="size-3.5 text-partial" />
-          délai dépassé
+          {t('modelCard.timeout')}
         </span>
       )
     case 'error':
       return (
         <span className="inline-flex items-center gap-1.5 font-mono text-xs text-text-subtle">
           <AlertTriangle aria-hidden="true" className="size-3.5 text-dissent" />
-          indisponible
+          {t('modelCard.unavailable')}
         </span>
       )
   }
 }
 
 function ModelCardImpl({ model, className }: ModelCardProps): ReactNode {
+  const { t } = useTranslation()
   const accent = slotAccent(model.slot)
   const bodyRef = useRef<HTMLDivElement>(null)
   const stick = useRef(true)
@@ -142,7 +144,7 @@ function ModelCardImpl({ model, className }: ModelCardProps): ReactNode {
       >
         {failed ? (
           <p className="text-sm leading-relaxed text-text-muted">
-            {model.error ?? 'Ce modèle n’a pas pu répondre. L’assemblée poursuit avec les autres.'}
+            {model.error ?? t('modelCard.failedBody')}
           </p>
         ) : model.content.length === 0 ? (
           <PendingBody slow={slow} />

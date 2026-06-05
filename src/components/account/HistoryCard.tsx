@@ -26,7 +26,7 @@ interface HistoryCardProps {
 
 /** Carte d'historique : question, aperçu du verdict, score, métadonnées, actions. */
 export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProps): ReactNode {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { isPro } = useAuth()
   const [pinOpen, setPinOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -100,7 +100,7 @@ export function HistoryCard({ item, onRemove, hidePin = false }: HistoryCardProp
               return <span key={slot} className="size-2 rounded-full" style={{ background: tinted }} />
             })}
           </div>
-          <span className="font-mono text-xs text-text-subtle">{formatRelativeDate(item.created_at)}</span>
+          <span className="font-mono text-xs text-text-subtle">{formatRelativeDate(item.created_at, i18n.language)}</span>
           {expiresIn !== null && (
             <span
               className={cn(

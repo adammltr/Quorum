@@ -62,7 +62,7 @@ interface RunItemProps {
 
 /** Ligne de run dans la sidebar : titre + méta + menu 3 points au hover. */
 function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const score = item.verdict?.consensus_score ?? null
 
   const handleShare = async () => {
@@ -89,7 +89,7 @@ function RunItem({ item, onTogglePin, onRemove }: RunItemProps): ReactNode {
           <ScoreBadge score={score} />
         ) : (
           <span className="shrink-0 font-mono text-[0.64rem] text-text-subtle">
-            {formatRelativeDate(item.created_at).replace('il y a ', '')}
+            {formatRelativeDate(item.created_at, i18n.language, true)}
           </span>
         )}
       </Link>

@@ -1,60 +1,60 @@
-# Politique de sécurité — Quorum
+# Security Policy
 
-## Versions supportées
+## Supported Versions
 
-| Version | Support sécurité |
+| Version | Security support |
 |---|---|
-| `main` (branche) | ✅ Oui |
-| Autres branches | ❌ Non |
+| `main` (branch) | ✅ Yes |
+| Other branches | ❌ No |
 
-## Reporter une faille
+## Reporting a Vulnerability
 
-**Ne pas ouvrir d'issue publique GitHub pour signaler une faille de sécurité.**
+**Please do not open a public GitHub issue for security vulnerabilities.**
 
-### Comment signaler
+### How to report
 
-Envoie un email à **adammolitor2008@gmail.com** avec :
+Email **adammolitor2008@gmail.com** with:
 
-- **Sujet** : `[SECURITY] Quorum — [description courte]`
-- **Description** de la vulnérabilité (type, composant affecté)
-- **Étapes pour reproduire** (POC si possible)
-- **Impact potentiel** (données exposées, utilisateurs affectés, etc.)
-- **Tes coordonnées** si tu veux être mentionné dans le fix (optionnel)
+- **Subject**: `[SECURITY] Quorum — [short description]`
+- A **description** of the vulnerability (type, affected component)
+- **Steps to reproduce** (a proof of concept if possible)
+- The **potential impact** (data exposed, users affected, etc.)
+- **Your contact details** if you want to be credited in the fix (optional)
 
-### Ce qui se passe ensuite
+### What happens next
 
-1. **Accusé de réception sous 48h** (souvent plus rapide).
-2. **Évaluation** : on confirme la vulnérabilité et évalue la sévérité.
-3. **Fix** : développement d'un patch, généralement en privé.
-4. **Divulgation coordonnée** : on te tient informé avant la publication publique du fix.
-5. **Credit** : ton nom dans le CHANGELOG du fix (si tu le souhaites).
+1. **Acknowledgement within 48h** (often sooner).
+2. **Assessment**: we confirm the vulnerability and evaluate its severity.
+3. **Fix**: a patch is developed, generally in private.
+4. **Coordinated disclosure**: we keep you informed before the fix is published.
+5. **Credit**: your name in the fix's changelog (if you wish).
 
-### Délai de divulgation
+### Disclosure timeline
 
-On s'engage à déployer un fix dans un délai raisonnable selon la sévérité :
+We aim to ship a fix within a reasonable timeframe based on severity:
 
-| Sévérité | Délai cible |
+| Severity | Target timeline |
 |---|---|
-| Critique (CVSS ≥ 9) | 7 jours |
-| Haute (CVSS 7-8.9) | 14 jours |
-| Moyenne (CVSS 4-6.9) | 30 jours |
-| Faible (CVSS < 4) | 90 jours |
+| Critical (CVSS ≥ 9) | 7 days |
+| High (CVSS 7–8.9) | 14 days |
+| Medium (CVSS 4–6.9) | 30 days |
+| Low (CVSS < 4) | 90 days |
 
-## Scope (ce qui est en périmètre)
+## Scope (in scope)
 
-- L'application web Quorum (frontend React + Supabase Edge Functions)
-- La gestion des clés API utilisateurs (BYOK)
-- L'authentification et les sessions
-- Les données utilisateurs stockées dans Supabase
-- Les images Docker ou scripts de déploiement si publiés
+- The Quorum web application (React frontend + Supabase Edge Functions)
+- User API key management (BYOK)
+- Authentication and sessions
+- User data stored in Supabase
+- Docker images or deployment scripts, if published
 
-## Hors scope
+## Out of scope
 
-- Les services tiers (OpenRouter, Supabase, Vercel) — signaler directement à eux
-- Les attaques nécessitant un accès physique à la machine
-- Le social engineering
-- Les rapports purement théoriques sans POC ni impact démontrable
+- Third-party services (OpenRouter, Supabase, Vercel) — report to them directly
+- Attacks requiring physical access to the machine
+- Social engineering
+- Purely theoretical reports without a proof of concept or demonstrable impact
 
-## Merci
+## Thanks
 
-La sécurité d'une app open source repose sur la communauté. Merci de prendre le temps de signaler de façon responsable.
+The security of an open source app relies on its community. Thank you for taking the time to report responsibly.

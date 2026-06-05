@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { CornerDownLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { SEED_QUESTIONS, pickSuggestions } from '@/lib/seed-questions'
+import { seedQuestions, pickSuggestions } from '@/lib/seed-questions'
 
 interface QuestionComposerProps {
   onSubmit: (question: string) => void
@@ -26,29 +26,32 @@ export function QuestionComposer({
   variant = 'hero',
   autoFocus = false,
 }: QuestionComposerProps): ReactNode {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language
   const reduced = useReducedMotion()
   const [value, setValue] = useState('')
   const [focused, setFocused] = useState(false)
   const [typed, setTyped] = useState('')
-  // 3 suggestions tirées au hasard à l'ouverture, stables pour la session.
-  const [suggestionPool] = useState(() => pickSuggestions(3))
+  // 3 suggestions tirées au hasard — recalculées quand la langue change.
+  const suggestionPool = useMemo(() => pickSuggestions(lang, 3), [lang])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const isHero = variant === 'hero'
   // Le typewriter ne tourne qu'à l'état héros, champ vide, non focus, mouvement autorisé.
   const showTypewriter = isHero && !reduced && value === '' && !focused
 
-  // Effet machine à écrire : les questions d'exemple s'écrivent puis s'effacent en boucle.
+  // Effet machine à écrire : les questions d'exemple s'écrivent puis s'effacent
+  // en boucle. Recalé sur la langue active (les seeds suivent i18next).
   useEffect(() => {
     if (!showTypewriter) return
     let cancelled = false
+    const seeds = seedQuestions(lang)
 
     void (async () => {
       setTyped('')
-      let qi = Math.floor(Math.random() * SEED_QUESTIONS.length)
+      let qi = Math.floor(Math.random() * seeds.length)
       while (!cancelled) {
-        const q = SEED_QUESTIONS[qi % SEED_QUESTIONS.length] ?? ''
+        const q = seeds[qi % seeds.length] ?? ''
         for (let i = 1; i <= q.length && !cancelled; i++) {
           setTyped(q.slice(0, i))
           await sleep(TYPE_MS)
@@ -66,7 +69,7 @@ export function QuestionComposer({
     return () => {
       cancelled = true
     }
-  }, [showTypewriter])
+  }, [showTypewriter, lang])
 
   const submit = () => {
     const q = value.trim()
