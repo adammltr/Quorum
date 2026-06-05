@@ -118,7 +118,7 @@ L'utilisateur ne pose pas une question *à une IA*. Il convoque une **assemblée
   ```
   Quorum du 01/06/2026 🟡🟢🟡🟠
   Score de consensus : 72 %
-  quorum.app/q/2026-06-01
+  quorum-nine-ebon.vercel.app/q/2026-06-01
   ```
 - Rendez-vous quotidien = boucle de rétention naturelle.
 
@@ -136,7 +136,7 @@ L'utilisateur ne pose pas une question *à une IA*. Il convoque une **assemblée
   - Style : sobre, premium, noir encre + ambre.
 
 ### Page publique de résultat
-- URL : `quorum.app/r/[session-id]` — rendue côté serveur (SSR) avec meta OG complètes.
+- URL : `quorum-nine-ebon.vercel.app/r/[session-id]` — rendue côté serveur (SSR) avec meta OG complètes.
 - Accessible sans compte.
 - Affiche la question, les 4 réponses, les votes, le verdict Chairman.
 - Bouton "Pose ta propre question" → conversion naturelle.

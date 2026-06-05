@@ -261,7 +261,7 @@ export function buildDailyReminderIcs(hour = 9): string {
     'PRODID:-//Quorum//Question du Jour//FR',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
-    `UID:quorum-daily-${today}@quorum.app`,
+    `UID:quorum-daily-${today}@quorum-nine-ebon.vercel.app`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${stamp}`,
     'DURATION:PT5M',

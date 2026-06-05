@@ -118,5 +118,5 @@ export const BORDA_POINTS: readonly number[] = [3, 2, 1] as const
 export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 /** En-têtes d'attribution OpenRouter (bonnes pratiques, non secrets). */
-export const OPENROUTER_REFERER = Deno.env.get('OPENROUTER_REFERER') ?? 'https://quorum.app'
+export const OPENROUTER_REFERER = Deno.env.get('OPENROUTER_REFERER') ?? 'https://quorum-nine-ebon.vercel.app'
 export const OPENROUTER_TITLE = 'Quorum'

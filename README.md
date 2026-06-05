@@ -19,7 +19,7 @@
 [![Free for everyone](https://img.shields.io/badge/Free-for%20everyone-2ea043.svg)](#-byok--privacy)
 [![Made with TypeScript](https://img.shields.io/badge/Made%20with-TypeScript-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-[**Live demo**](https://quorum.app) · [**Self-host**](#-quick-start) · [**How it works**](#-how-it-works) · [**Roadmap**](#-roadmap) · [**Contributing**](CONTRIBUTING.md)
+[**Live demo**](https://quorum-nine-ebon.vercel.app) · [**Self-host**](#-quick-start) · [**How it works**](#-how-it-works) · [**Roadmap**](#-roadmap) · [**Contributing**](CONTRIBUTING.md)
 
 </div>
 
@@ -42,7 +42,7 @@ Quorum turns that into a protocol. Four models answer in parallel, grade each ot
 ## ⚡ Quick Start
 
 ### Use it online
-No install, no account. Open **[quorum.app](https://quorum.app)**, type a question, watch four models deliberate. First verdict in under a minute.
+No install, no account. Open **[quorum-nine-ebon.vercel.app](https://quorum-nine-ebon.vercel.app)**, type a question, watch four models deliberate. First verdict in under a minute.
 
 ### Self-host (< 5 commands)
 
